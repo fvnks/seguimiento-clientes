@@ -4,7 +4,8 @@ import { prisma } from '@/lib/prisma';
 import * as bcrypt from 'bcryptjs';
 
 // GET /api/admin/users
-const session = await getServerSession();
+export async function GET() {
+  const session = await getServerSession();
 
   if ((session?.user as any)?.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
@@ -22,7 +23,7 @@ const session = await getServerSession();
 
 // POST /api/admin/users
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if ((session?.user as any)?.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
