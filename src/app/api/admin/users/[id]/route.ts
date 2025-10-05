@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import * as bcrypt from 'bcryptjs';
 
 // GET /api/admin/users/[id]
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if ((session?.user as any)?.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
@@ -27,7 +26,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // PUT /api/admin/users/[id]
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if ((session?.user as any)?.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
@@ -62,7 +61,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 // DELETE /api/admin/users/[id]
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if ((session?.user as any)?.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }

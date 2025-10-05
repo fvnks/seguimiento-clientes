@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 interface Params {
   params: { id: string };
@@ -17,7 +16,7 @@ async function checkOwnership(userId: number, ventaId: number) {
 
 // GET /api/ventas/[id]
 export async function GET(request: Request, { params }: Params) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!(session?.user as any)?.id) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
@@ -68,7 +67,7 @@ export async function GET(request: Request, { params }: Params) {
 
 // DELETE /api/ventas/[id]
 export async function DELETE(request: Request, { params }: Params) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!(session?.user as any)?.id) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
