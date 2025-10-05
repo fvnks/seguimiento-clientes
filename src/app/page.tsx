@@ -1,95 +1,144 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Spinner, Alert, Table } from 'react-bootstrap';
+import Link from 'next/link';
+import { FaDollarSign, FaShoppingCart, FaUsers } from 'react-icons/fa';
+
+// Define types
+interface Venta {
+  id: number;
+  total: number;
+  fecha: string;
+  cliente: {
+    nombre: string; // legacy
+    razonSocial: string | null;
+  };
+}
+
+interface Cliente {
+    id: number;
+}
+
+export default function DashboardPage() {
+  const [ventas, setVentas] = useState<Venta[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [ventasRes, clientesRes] = await Promise.all([
+          fetch('/api/ventas'),
+          fetch('/api/clientes'),
+        ]);
+
+        if (!ventasRes.ok || !clientesRes.ok) {
+          throw new Error('Error al obtener los datos para el dashboard');
+        }
+
+        const ventasData = await ventasRes.json();
+        const clientesData = await clientesRes.json();
+
+        setVentas(ventasData);
+        setClientes(clientesData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // --- Data Processing ---
+  const totalRevenue = ventas.reduce((acc, venta) => acc + venta.total, 0);
+  const totalSales = ventas.length;
+  const totalClients = clientes.length;
+  const recentSales = ventas.slice(0, 5); // API already sorts by date desc
+
+  if (isLoading) {
+    return <Container className="text-center mt-5"><Spinner animation="border" /></Container>;
+  }
+
+  if (error) {
+    return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>;
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <Container className="mt-4">
+      <h1>Dashboard</h1>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      <Row className="my-4">
+        <Col md={4} className="mb-3">
+          <Card bg="primary" text="white">
+            <Card.Body>
+              <Card.Title className="d-flex align-items-center">
+                <FaDollarSign className="me-2" /> Ingresos Totales
+              </Card.Title>
+              <Card.Text className="fs-4 fw-bold">
+                {new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(totalRevenue)}
+              </Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4} className="mb-3">
+          <Card bg="success" text="white">
+            <Card.Body>
+              <Card.Title className="d-flex align-items-center">
+                <FaShoppingCart className="me-2" /> Número de Ventas
+              </Card.Title>
+              <Card.Text className="fs-4 fw-bold">{totalSales}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4} className="mb-3">
+          <Card bg="info" text="white">
+            <Card.Body>
+              <Card.Title className="d-flex align-items-center">
+                <FaUsers className="me-2" /> Total de Clientes
+              </Card.Title>
+              <Card.Text className="fs-4 fw-bold">{totalClients}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col>
+            <Card>
+                <Card.Header><h4>Últimas Ventas</h4></Card.Header>
+                <Card.Body>
+                    {recentSales.length > 0 ? (
+                        <Table striped bordered hover responsive>
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Fecha</th>
+                                    <th>Monto Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recentSales.map((venta) => (
+                                    <tr key={venta.id}>
+                                        <td>{venta.cliente?.nombre || 'N/A'}</td>
+                                        <td>{new Date(venta.fecha).toLocaleDateString()}</td>
+                                        <td>{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(venta.total)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    ) : (
+                        <Alert variant="light">No hay ventas registradas todavía.</Alert>
+                    )}
+                </Card.Body>
+            </Card>
+        </Col>
+      </Row>
+
+    </Container>
   );
 }

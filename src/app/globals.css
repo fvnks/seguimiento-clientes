@@ -19,7 +19,6 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -38,5 +37,70 @@ a {
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
+  }
+}
+
+/* Modern, Underlined Form Inputs */
+.form-control,
+.form-select {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid #ced4da !important; /* Subtle bottom border */
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  transition: border-bottom-color 0.15s ease-in-out;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-bottom: 2px solid #1976D2 !important; /* Use the primary color on focus */
+  box-shadow: none !important;
+}
+
+/* Adjust input group text for the new style */
+.input-group-text {
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #ced4da !important;
+}
+
+/* Responsive Card View for Tables on Mobile */
+@media (max-width: 768px) {
+  .responsive-table thead {
+    display: none; /* Hide table headers on mobile */
+  }
+
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: .25rem;
+  }
+
+  .responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+
+  .responsive-table td:last-child {
+    border-bottom: none;
+  }
+
+  .responsive-table td::before {
+    content: attr(data-label); /* Use data-label for the "header" */
+    font-weight: bold;
+    margin-right: 1rem;
   }
 }
