@@ -63,7 +63,8 @@
         font-size: 9pt; /* Smaller base font size for print */
     }
 
-    .no-print {
+    .no-print,
+    .navbar-glass {
         display: none !important;
     }
 
