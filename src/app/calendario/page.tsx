@@ -6,6 +6,7 @@ import moment from "moment";
 import "moment/locale/es"; // Import Spanish locale for moment
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Container, Modal, Button, Spinner, Alert } from "react-bootstrap";
+import styles from "./Calendario.module.css";
 
 // Setup the localizer by providing the moment Object
 moment.locale("es"); // Set moment to Spanish
@@ -101,7 +102,7 @@ export default function CalendarioPage() {
   return (
     <Container className="mt-4">
       <h1>Calendario de Ventas</h1>
-      <div style={{ height: "70vh" }}>
+      <div className={styles.calendarContainer} style={{ height: "70vh" }}>
         <Calendar
           localizer={localizer}
           events={events}

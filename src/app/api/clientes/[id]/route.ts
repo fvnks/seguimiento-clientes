@@ -42,7 +42,9 @@ async function getFullClienteData(clienteId: number) {
     ...cliente,
     ventas: cliente.ventas.map(venta => {
       const totalNeto = venta.productosVendidos.reduce((acc, item) => {
-        return acc + (item.cantidad * item.producto.precioNeto);
+        // Ensure precioNeto is a number, default to 0 if not
+        const precioNeto = typeof item.producto.precioNeto === 'number' ? item.producto.precioNeto : 0;
+        return acc + (item.cantidad * precioNeto);
       }, 0);
       const total = totalNeto * 1.19; // Add 19% IVA
       return { ...venta, total };

@@ -10,6 +10,7 @@ import {
   Spinner,
   Row,
   Col,
+  InputGroup,
 } from "react-bootstrap";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -40,6 +41,7 @@ export default function EditarClientePage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -84,6 +86,32 @@ export default function EditarClientePage() {
 
   const handleLocationChange = (lat: number, lng: number) => {
     setFormData((prev) => ({ ...prev, latitud: lat, longitud: lng }));
+  };
+
+  const handleGeocode = async () => {
+    if (!formData.direccion) {
+      setError("Por favor, introduce una dirección para buscar.");
+      return;
+    }
+    setError(null);
+    setIsGeocoding(true);
+    try {
+      const res = await fetch(
+        `/api/geocode?address=${encodeURIComponent(formData.direccion)}`
+      );
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.message || "Error al obtener las coordenadas"
+        );
+      }
+      const data = await res.json();
+      handleLocationChange(data.lat, data.lon);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsGeocoding(false);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -234,15 +262,28 @@ export default function EditarClientePage() {
         </Row>
 
         <Row>
-           <Col md={12}>
+          <Col>
             <Form.Group className="mb-3" controlId="direccion">
               <Form.Label>Dirección</Form.Label>
-              <Form.Control
-                type="text"
-                name="direccion"
-                value={formData.direccion}
-                onChange={handleInputChange}
-              />
+              <InputGroup>
+                <Form.Control
+                  type="text"
+                  name="direccion"
+                  value={formData.direccion}
+                  onChange={handleInputChange}
+                />
+                <Button
+                  variant="outline-secondary"
+                  onClick={handleGeocode}
+                  disabled={isGeocoding}
+                >
+                  {isGeocoding ? (
+                    <Spinner as="span" animation="border" size="sm" />
+                  ) : (
+                    "Buscar"
+                  )}
+                </Button>
+              </InputGroup>
             </Form.Group>
           </Col>
         </Row>
