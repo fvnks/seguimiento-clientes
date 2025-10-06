@@ -60,8 +60,8 @@ export default function NuevaVentaPage() {
         }
         const clientesData = await clientesRes.json();
         const productosData = await productosRes.json();
-        setClientes(clientesData);
-        setProductos(productosData);
+        setClientes(clientesData.clientes || clientesData);
+        setProductos(productosData.productos);
       } catch (err: any) {
         setError(err.message);
       } finally {
