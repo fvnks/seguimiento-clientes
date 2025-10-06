@@ -41,9 +41,10 @@ async function getFullClienteData(clienteId: number) {
   const clienteConVentasTotales = {
     ...cliente,
     ventas: cliente.ventas.map(venta => {
-      const total = venta.productosVendidos.reduce((acc, item) => {
-        return acc + (item.cantidad * item.precioAlMomento);
+      const totalNeto = venta.productosVendidos.reduce((acc, item) => {
+        return acc + (item.cantidad * item.producto.precioNeto);
       }, 0);
+      const total = totalNeto * 1.19; // Add 19% IVA
       return { ...venta, total };
     })
   };

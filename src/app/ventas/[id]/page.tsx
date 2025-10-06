@@ -16,10 +16,11 @@ interface Cliente {
 
 interface VentaProducto {
   cantidad: number;
-  precioAlMomento: number;
+  precioAlMomento: number; // This is the total price, kept for historical reasons
   producto: {
     nombre: string;
     codigo: string;
+    precioNeto: number;
   };
 }
 
@@ -34,7 +35,7 @@ interface UserProfile {
 interface Venta {
   id: number;
   fecha: string;
-  total: number;
+  total: number; // This is the final total including IVA
   cliente: Cliente;
   productosVendidos: VentaProducto[];
   user: UserProfile;
@@ -107,6 +108,13 @@ export default function NotaVentaPage() {
 
   const vendedor = venta.user;
 
+  // Calculate totals
+  const totalNeto = venta.productosVendidos.reduce((acc, item) => {
+    return acc + (item.cantidad * item.producto.precioNeto);
+  }, 0);
+  const iva = totalNeto * 0.19;
+  const totalFinal = totalNeto + iva;
+
   return (
     <>
       <Container className="mt-4 printable-container">
@@ -159,7 +167,7 @@ export default function NotaVentaPage() {
                   <th>Código</th>
                   <th>Producto</th>
                   <th className="text-end">Cantidad</th>
-                  <th className="text-end">Precio Unitario</th>
+                  <th className="text-end">Precio Neto</th>
                   <th className="text-end">Total Línea</th>
                 </tr>
               </thead>
@@ -169,8 +177,8 @@ export default function NotaVentaPage() {
                     <td>{item.producto.codigo}</td>
                     <td className="product-name-cell">{item.producto.nombre}</td>
                     <td className="text-end">{item.cantidad}</td>
-                    <td className="text-end">{formatCurrency(item.precioAlMomento)}</td>
-                    <td className="text-end">{formatCurrency(item.cantidad * item.precioAlMomento)}</td>
+                    <td className="text-end">{formatCurrency(item.producto.precioNeto)}</td>
+                    <td className="text-end">{formatCurrency(item.cantidad * item.producto.precioNeto)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -180,8 +188,16 @@ export default function NotaVentaPage() {
                 <Row>
                     <Col xs={{ span: 4, offset: 8 }}>
                         <div className="total-row d-flex justify-content-between">
-                            <span>Total Venta:</span>
-                            <span>{formatCurrency(venta.total)}</span>
+                            <span>Neto:</span>
+                            <span>{formatCurrency(totalNeto)}</span>
+                        </div>
+                        <div className="total-row d-flex justify-content-between">
+                            <span>IVA (19%):</span>
+                            <span>{formatCurrency(iva)}</span>
+                        </div>
+                        <div className="total-row d-flex justify-content-between fw-bold">
+                            <span>Total:</span>
+                            <span>{formatCurrency(totalFinal)}</span>
                         </div>
                     </Col>
                 </Row>
