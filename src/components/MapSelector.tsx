@@ -41,7 +41,7 @@ const ChangeView = ({ center }: { center: [number, number] }) => {
 };
 
 export default function MapSelector({ onLocationChange, position }: MapSelectorProps) {
-  const validPosition = position && position.length === 2 ? position : [-33.45694, -70.64827];
+  const validPosition: [number, number] = position && position.length === 2 ? position : [-33.45694, -70.64827];
 
   const handlePositionChange = (lat: number, lng: number) => {
     onLocationChange(lat, lng);

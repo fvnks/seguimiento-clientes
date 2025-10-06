@@ -16,5 +16,5 @@ export default function MapLoader({ onLocationChange, initialPosition }: MapLoad
         ssr: false
     }), []);
 
-    return <MapSelector onLocationChange={onLocationChange} initialPosition={initialPosition} />;
+    return <MapSelector onLocationChange={onLocationChange} position={initialPosition || [-33.45694, -70.64827]} />;
 }

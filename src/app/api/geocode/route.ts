@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/geocode?address=...
 export async function GET(request: Request) {
   try {

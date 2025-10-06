@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 
 interface Params {
   params: { id: string };
@@ -17,10 +17,10 @@ async function checkOwnership(userId: number, clienteId: number) {
 
 export async function GET(request: Request, { params }: Params) {
   const session = await getServerSession(authOptions);
-  if (!(session?.user as any)?.id) {
+  if (!session || !session.user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt((session.user as any).id, 10);
+  const userId = parseInt(session.user.id, 10);
   const clienteId = parseInt(params.id, 10);
 
   if (isNaN(clienteId)) {
@@ -77,10 +77,10 @@ export async function GET(request: Request, { params }: Params) {
 
 export async function PUT(request: Request, { params }: Params) {
   const session = await getServerSession(authOptions);
-  if (!(session?.user as any)?.id) {
+  if (!session || !session.user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt((session.user as any).id, 10);
+  const userId = parseInt(session.user.id, 10);
   const clienteId = parseInt(params.id, 10);
 
   if (isNaN(clienteId)) {
@@ -141,10 +141,10 @@ export async function PUT(request: Request, { params }: Params) {
 
 export async function DELETE(request: Request, { params }: Params) {
   const session = await getServerSession(authOptions);
-  if (!(session?.user as any)?.id) {
+  if (!session || !session.user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt((session.user as any).id, 10);
+  const userId = parseInt(session.user.id, 10);
   const clienteId = parseInt(params.id, 10);
 
   if (isNaN(clienteId)) {

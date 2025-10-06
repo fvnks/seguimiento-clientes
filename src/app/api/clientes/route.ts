@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/authOptions";
 
 // GET /api/clientes?search=...
 export async function GET(request: NextRequest) {
-  const session = await getServerSession();
-  if (!(session?.user as any)?.id) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt((session.user as any).id, 10);
+  const userId = parseInt(session.user.id, 10);
 
   try {
     const search = request.nextUrl.searchParams.get('search');
@@ -49,11 +50,11 @@ export async function GET(request: NextRequest) {
 
 // POST /api/clientes
 export async function POST(request: Request) {
-  const session = await getServerSession();
-  if (!(session?.user as any)?.id) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  const userId = parseInt((session.user as any).id, 10);
+  const userId = parseInt(session.user.id, 10);
 
   try {
     const body = await request.json();
