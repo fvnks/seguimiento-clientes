@@ -19,13 +19,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={inter.className}>
-      <body>
+    <html lang="es" className={`${inter.className} h-100`}>
+      <body className="d-flex flex-column h-100">
         <Providers>
           <NavigationBar />
-          <main className="py-4">
+          <main className="py-4 flex-grow-1">
             {children}
           </main>
+          <footer className="py-3 mt-auto text-center text-muted bg-light">
+            <p className="mb-0">Hecho con <span className="heart">♥</span> por Rodrigo Droguett Stahr</p>
+          </footer>
         </Providers>
       </body>
     </html>

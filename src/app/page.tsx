@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Spinner, Alert, Table } from 'react-bootstrap';
 import Link from 'next/link';
 import { FaDollarSign, FaShoppingCart, FaUsers } from 'react-icons/fa';
+import styles from './Dashboard.module.css'; // Import the new CSS module
 
 // Define types
 interface Venta {
@@ -70,13 +71,13 @@ export default function DashboardPage() {
 
   return (
     <Container className="mt-4">
-      <h1>Dashboard</h1>
+      <h1 className="h2 mb-4">Dashboard</h1>
 
       <Row className="my-4">
         <Col md={4} className="mb-3">
           <Card bg="primary" text="white">
             <Card.Body>
-              <Card.Title className="d-flex align-items-center">
+              <Card.Title className="d-flex align-items-center h5">
                 <FaDollarSign className="me-2" /> Ingresos Totales
               </Card.Title>
               <Card.Text className="fs-4 fw-bold">
@@ -88,7 +89,7 @@ export default function DashboardPage() {
         <Col md={4} className="mb-3">
           <Card bg="success" text="white">
             <Card.Body>
-              <Card.Title className="d-flex align-items-center">
+              <Card.Title className="d-flex align-items-center h5">
                 <FaShoppingCart className="me-2" /> Número de Ventas
               </Card.Title>
               <Card.Text className="fs-4 fw-bold">{totalSales}</Card.Text>
@@ -98,7 +99,7 @@ export default function DashboardPage() {
         <Col md={4} className="mb-3">
           <Card bg="info" text="white">
             <Card.Body>
-              <Card.Title className="d-flex align-items-center">
+              <Card.Title className="d-flex align-items-center h5">
                 <FaUsers className="me-2" /> Total de Clientes
               </Card.Title>
               <Card.Text className="fs-4 fw-bold">{totalClients}</Card.Text>
@@ -113,24 +114,50 @@ export default function DashboardPage() {
                 <Card.Header><h4>Últimas Ventas</h4></Card.Header>
                 <Card.Body>
                     {recentSales.length > 0 ? (
-                        <Table striped bordered hover responsive>
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Fecha</th>
-                                    <th>Monto Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <>
+                            {/* Desktop View: Table */}
+                            <div className={styles.tableView}>
+                                <Table striped bordered hover responsive>
+                                    <thead>
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Fecha</th>
+                                            <th>Monto Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentSales.map((venta) => (
+                                            <tr key={venta.id}>
+                                                <td>{venta.cliente?.nombre || 'N/A'}</td>
+                                                <td>{new Date(venta.fecha).toLocaleDateString()}</td>
+                                                <td>{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(venta.total)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            </div>
+
+                            {/* Mobile View: Cards */}
+                            <div className={styles.cardView}>
                                 {recentSales.map((venta) => (
-                                    <tr key={venta.id}>
-                                        <td>{venta.cliente?.nombre || 'N/A'}</td>
-                                        <td>{new Date(venta.fecha).toLocaleDateString()}</td>
-                                        <td>{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(venta.total)}</td>
-                                    </tr>
+                                    <div key={venta.id} className={styles.saleCard}>
+                                        <div className={styles.saleCardHeader}>
+                                            {venta.cliente?.nombre || 'N/A'}
+                                        </div>
+                                        <div className={styles.saleCardBody}>
+                                            <div>
+                                                <span>Fecha:</span>
+                                                <span>{new Date(venta.fecha).toLocaleDateString()}</span>
+                                            </div>
+                                            <div>
+                                                <span>Monto:</span>
+                                                <span className="fw-bold">{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(venta.total)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </Table>
+                            </div>
+                        </>
                     ) : (
                         <Alert variant="light">No hay ventas registradas todavía.</Alert>
                     )}

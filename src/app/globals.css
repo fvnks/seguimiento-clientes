@@ -104,3 +104,22 @@ a {
     margin-right: 1rem;
   }
 }
+
+/* Heart animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.heart {
+  display: inline-block;
+  color: red;
+  animation: pulse 1.5s infinite;
+}
