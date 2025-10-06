@@ -136,3 +136,26 @@ a {
     background-color: rgba(10, 10, 10, 0.5) !important;
   }
 }
+
+/* Custom Rounded Corners for a Softer UI */
+.card,
+.btn,
+.toast,
+.alert,
+.modal-content {
+  border-radius: 0.75rem !important;
+}
+
+.list-group {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.navbar-toggler {
+  border-radius: 0.5rem;
+}
+
+.rounded-bar {
+  margin: 0.5rem 1rem;
+  border-radius: 0.75rem;
+}

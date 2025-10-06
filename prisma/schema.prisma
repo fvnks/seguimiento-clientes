@@ -93,6 +93,26 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  clientes  Cliente[]
-  ventas    Venta[]
+  clientes      Cliente[]
+  ventas        Venta[]
+  announcements Announcement[]
+  newsArticles  NewsArticle[]
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  isActive  Boolean  @default(true)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+}
+
+model NewsArticle {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
 }

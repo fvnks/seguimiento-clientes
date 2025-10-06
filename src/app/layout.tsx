@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import "./custom-theme.scss";
 import "./globals.css";
 import NavigationBar from "@/components/NavigationBar";
+import AnnouncementToast from "@/components/AnnouncementToast"; // Import the component
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="es" className={`${inter.className} h-100`}>
       <body className="d-flex flex-column h-100">
         <Providers>
+          <AnnouncementToast /> {/* Add the component here */}
           <NavigationBar />
           <main className="py-4 flex-grow-1">
             {children}

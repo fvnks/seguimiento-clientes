@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Spinner, Alert, Table } from 'react-bootstrap';
-import Link from 'next/link';
-import { FaDollarSign, FaShoppingCart, FaUsers } from 'react-icons/fa';
-import styles from './Dashboard.module.css'; // Import the new CSS module
+import { FaDollarSign, FaShoppingCart, FaUsers, FaRss } from 'react-icons/fa';
+import styles from './Dashboard.module.css';
 
 // Define types
 interface Venta {
@@ -12,18 +11,29 @@ interface Venta {
   total: number;
   fecha: string;
   cliente: {
-    nombre: string; // legacy
+    nombre: string;
     razonSocial: string | null;
   };
 }
 
 interface Cliente {
-    id: number;
+  id: number;
+}
+
+interface NewsArticle {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  author: {
+    username: string;
+  };
 }
 
 export default function DashboardPage() {
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [news, setNews] = useState<NewsArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,20 +41,23 @@ export default function DashboardPage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [ventasRes, clientesRes] = await Promise.all([
+        const [ventasRes, clientesRes, newsRes] = await Promise.all([
           fetch('/api/ventas'),
           fetch('/api/clientes'),
+          fetch('/api/news'),
         ]);
 
-        if (!ventasRes.ok || !clientesRes.ok) {
+        if (!ventasRes.ok || !clientesRes.ok || !newsRes.ok) {
           throw new Error('Error al obtener los datos para el dashboard');
         }
 
         const ventasData = await ventasRes.json();
         const clientesData = await clientesRes.json();
+        const newsData = await newsRes.json();
 
         setVentas(ventasData);
         setClientes(clientesData);
+        setNews(newsData);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -55,11 +68,10 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  // --- Data Processing ---
   const totalRevenue = ventas.reduce((acc, venta) => acc + venta.total, 0);
   const totalSales = ventas.length;
   const totalClients = clientes.length;
-  const recentSales = ventas.slice(0, 5); // API already sorts by date desc
+  const recentSales = ventas.slice(0, 5);
 
   if (isLoading) {
     return <Container className="text-center mt-5"><Spinner animation="border" /></Container>;
@@ -72,7 +84,7 @@ export default function DashboardPage() {
   return (
     <Container className="mt-4">
       <h1 className="h2 mb-4">Dashboard</h1>
-
+      
       <Row className="my-4">
         <Col md={4} className="mb-3">
           <Card bg="primary" text="white">
@@ -108,14 +120,13 @@ export default function DashboardPage() {
         </Col>
       </Row>
 
-      <Row>
-        <Col>
+      <Row className="g-4">
+        <Col lg={8}>
             <Card>
                 <Card.Header><h4>Últimas Ventas</h4></Card.Header>
                 <Card.Body>
                     {recentSales.length > 0 ? (
                         <>
-                            {/* Desktop View: Table */}
                             <div className={styles.tableView}>
                                 <Table striped bordered hover responsive>
                                     <thead>
@@ -136,23 +147,13 @@ export default function DashboardPage() {
                                     </tbody>
                                 </Table>
                             </div>
-
-                            {/* Mobile View: Cards */}
                             <div className={styles.cardView}>
                                 {recentSales.map((venta) => (
                                     <div key={venta.id} className={styles.saleCard}>
-                                        <div className={styles.saleCardHeader}>
-                                            {venta.cliente?.nombre || 'N/A'}
-                                        </div>
+                                        <div className={styles.saleCardHeader}>{venta.cliente?.nombre || 'N/A'}</div>
                                         <div className={styles.saleCardBody}>
-                                            <div>
-                                                <span>Fecha:</span>
-                                                <span>{new Date(venta.fecha).toLocaleDateString()}</span>
-                                            </div>
-                                            <div>
-                                                <span>Monto:</span>
-                                                <span className="fw-bold">{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(venta.total)}</span>
-                                            </div>
+                                            <div><span>Fecha:</span> <span>{new Date(venta.fecha).toLocaleDateString()}</span></div>
+                                            <div><span>Monto:</span> <span className="fw-bold">{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(venta.total)}</span></div>
                                         </div>
                                     </div>
                                 ))}
@@ -164,8 +165,27 @@ export default function DashboardPage() {
                 </Card.Body>
             </Card>
         </Col>
+        <Col lg={4}>
+          <Card>
+            <Card.Header><h4><FaRss className="me-2" /> Últimas Noticias</h4></Card.Header>
+            <Card.Body style={{maxHeight: '400px', overflowY: 'auto'}}>
+              {news.length > 0 ? (
+                news.map(article => (
+                  <div key={article.id} className="mb-3">
+                    <h5 className="h6 mb-1">{article.title}</h5>
+                     <small className="text-muted d-block mb-2">
+                      Por <strong>{article.author.username}</strong> el {new Date(article.createdAt).toLocaleDateString()}
+                    </small>
+                    <p className="small mb-1">{article.content}</p>
+                  </div>
+                ))
+              ) : (
+                <Alert variant="light" className="mb-0">No hay noticias recientes.</Alert>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
       </Row>
-
     </Container>
   );
 }
