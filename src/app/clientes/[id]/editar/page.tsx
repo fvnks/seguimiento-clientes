@@ -132,9 +132,9 @@ export default function EditarClientePage() {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h1>Editar Cliente</h1>
         <div>
-          <Button variant="secondary" as={Link} href="/clientes" className="me-2">
-            Cancelar
-          </Button>
+          <Link href="/clientes" passHref>
+            <Button variant="secondary" className="me-2">Cancelar</Button>
+          </Link>
           <Button variant="primary" type="submit" form="edit-cliente-form" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
