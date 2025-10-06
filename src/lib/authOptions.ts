@@ -12,7 +12,10 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log("Authorize function called with:", credentials);
+
         if (!credentials) {
+          console.log("No credentials provided, returning null.");
           return null;
         }
 
@@ -20,15 +23,21 @@ export const authOptions: NextAuthOptions = {
           where: { username: credentials.username },
         });
 
+        console.log("User found in DB:", user);
+
         if (user) {
           const passwordMatch = await bcrypt.compare(credentials.password, user.password);
+          console.log("Password match result:", passwordMatch);
 
           if (passwordMatch) {
+            console.log("Authentication successful, returning user object.");
             return { id: user.id.toString(), name: user.username, role: user.role };
           } else {
+            console.log("Password mismatch, returning null.");
             return null;
           }
         } else {
+          console.log("User not found, returning null.");
           return null;
         }
       },
