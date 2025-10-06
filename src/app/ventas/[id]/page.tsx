@@ -139,13 +139,13 @@ export default function NotaVentaPage() {
             </header>
 
             <Row className="my-4">
-              <Col md={6} className="client-details">
+              <Col xs={6} className="client-details">
                 <h5>Cliente</h5>
                 <p><strong>Razón Social:</strong> {venta.cliente.razonSocial || venta.cliente.nombre}</p>
                 <p><strong>RUT:</strong> {venta.cliente.rut || '-'}</p>
                 <p><strong>Dirección:</strong> {venta.cliente.direccion || '-'}</p>
               </Col>
-              <Col md={6} className="seller-details">
+              <Col xs={6} className="seller-details">
                 <h5>Vendedor</h5>
                 <p><strong>Nombre:</strong> {vendedor.nombre ? `${vendedor.nombre} ${vendedor.apellido || ''}` : vendedor.username}</p>
                 <p><strong>RUT:</strong> {vendedor.rut || '-'}</p>
