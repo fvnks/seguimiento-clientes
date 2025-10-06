@@ -9,7 +9,7 @@
     font-weight: 600;
 }
 
-.company-details p, .client-details p {
+.company-details p, .client-details p, .seller-details p {
     margin-bottom: 0.1rem;
     font-size: 0.9rem;
 }
@@ -60,7 +60,7 @@
 @media print {
     body {
         background-color: #fff !important;
-        font-size: 9pt; /* Smaller base font size for print */
+        font-size: 8pt; /* Smaller base font size for print */
     }
 
     .no-print,
@@ -91,14 +91,14 @@
     }
 
     .sales-note-table th, .sales-note-table td {
-        padding: 0.3rem;
+        padding: 0.2rem;
     }
 
     .sales-note-table .product-name-cell {
-        font-size: 8pt;
+        font-size: 7pt;
     }
 
-    .company-details p, .client-details p {
+    .company-details p, .client-details p, .seller-details p {
         font-size: 8pt;
     }
     
