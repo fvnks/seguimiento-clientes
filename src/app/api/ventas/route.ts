@@ -32,16 +32,27 @@ export async function GET() {
       }
     });
 
-    // Calculate the total for each sale and serialize the date
-    const ventasConTotal = ventas.map(venta => {
+    // Calculate the total for each sale and prepare it for the calendar view
+    const ventasParaCalendario = ventas.map(venta => {
       const totalNeto = venta.productosVendidos.reduce((acc, item) => {
-        return acc + (item.cantidad * item.producto.precioNeto);
+        // Ensure precioNeto is a number, default to 0 if not
+        const precioNeto = typeof item.producto.precioNeto === 'number' ? item.producto.precioNeto : 0;
+        return acc + (item.cantidad * precioNeto);
       }, 0);
-      const total = totalNeto * 1.19; // Add 19% IVA
-      return { ...venta, fecha: venta.fecha.toISOString(), total };
+      const monto = totalNeto * 1.19; // Add 19% IVA
+
+      return {
+        id: venta.id,
+        fecha: venta.fecha.toISOString(),
+        monto: monto,
+        descripcion: venta.descripcion,
+        cliente: {
+          nombre: venta.cliente.razonSocial || venta.cliente.nombre,
+        },
+      };
     });
 
-    return NextResponse.json(ventasConTotal);
+    return NextResponse.json(ventasParaCalendario);
   } catch (error) {
     console.error("Error fetching ventas:", error);
     return NextResponse.json(
