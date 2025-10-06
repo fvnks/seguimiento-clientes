@@ -90,7 +90,11 @@ export default function NotaVentaPage() {
   };
 
   const handlePrint = () => {
+    if (!venta) return;
+    const originalTitle = document.title;
+    document.title = `Nota de Venta #${venta.id}`;
     window.print();
+    document.title = originalTitle;
   };
 
   // --- Render Logic ---
