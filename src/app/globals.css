@@ -123,3 +123,16 @@ a {
   color: red;
   animation: pulse 1.5s infinite;
 }
+
+/* Glassmorphism Navbar */
+.navbar-glass {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .navbar-glass {
+    background-color: rgba(10, 10, 10, 0.5) !important;
+  }
+}

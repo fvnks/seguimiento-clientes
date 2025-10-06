@@ -11,7 +11,7 @@ export default function NavigationBar() {
   const isAdmin = (session?.user as any)?.role === 'ADMIN';
 
   return (
-    <Navbar bg="light" variant="light" expand="lg" sticky="top" className="border-bottom shadow-sm">
+    <Navbar variant="light" expand="lg" sticky="top" className="navbar-glass shadow">
       <Container>
         <Navbar.Brand as={Link} href="/"><strong>Gestor de Clientes</strong></Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
