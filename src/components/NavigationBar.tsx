@@ -41,14 +41,18 @@ export default function NavigationBar() {
                 </>
               )}
             </Nav>
-            <Nav>
+            <Nav className="align-items-center">
               {status === 'authenticated' ? (
                 <>
                   {isAdmin && (
-                    <NavDropdown title={<><FaUserShield className="me-2" /> Admin</>} id="admin-dropdown">
-                      <NavDropdown.Item as={Link} href="/admin/usuarios">User Management</NavDropdown.Item>
-                      <NavDropdown.Item as={Link} href="/admin/comunicaciones"><FaBullhorn className="me-2" /> Comunicaciones</NavDropdown.Item>
-                    </NavDropdown>
+                    <>
+                      <Nav.Link as={Link} href="/admin/comunicaciones" className="d-flex align-items-center">
+                        <FaBullhorn className="me-2" /> Comunicaciones
+                      </Nav.Link>
+                      <NavDropdown title={<FaUserShield />} id="admin-dropdown" align="end">
+                        <NavDropdown.Item as={Link} href="/admin/usuarios">Gestionar Usuarios</NavDropdown.Item>
+                      </NavDropdown>
+                    </>
                   )}
                   <Nav.Link as={Link} href="/configuracion" className="d-flex align-items-center">
                     <FaCog className="me-2" /> Configuración
