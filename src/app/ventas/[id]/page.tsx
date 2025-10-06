@@ -23,12 +23,21 @@ interface VentaProducto {
   };
 }
 
+interface UserProfile {
+  nombre: string | null;
+  apellido: string | null;
+  rut: string | null;
+  zona: string | null;
+  username: string;
+}
+
 interface Venta {
   id: number;
   fecha: string;
   total: number;
   cliente: Cliente;
   productosVendidos: VentaProducto[];
+  user: UserProfile;
 }
 
 interface SettingsData {
@@ -96,6 +105,8 @@ export default function NotaVentaPage() {
     return <Container className="mt-5"><Alert variant="warning">No se encontró la venta.</Alert></Container>;
   }
 
+  const vendedor = venta.user;
+
   return (
     <>
       <Container className="mt-4 printable-container">
@@ -127,12 +138,20 @@ export default function NotaVentaPage() {
               </Row>
             </header>
 
-            <section className="my-4 client-details">
-              <h5>Cliente</h5>
-              <p><strong>Razón Social:</strong> {venta.cliente.razonSocial || venta.cliente.nombre}</p>
-              <p><strong>RUT:</strong> {venta.cliente.rut || '-'}</p>
-              <p><strong>Dirección:</strong> {venta.cliente.direccion || '-'}</p>
-            </section>
+            <Row className="my-4">
+              <Col md={6} className="client-details">
+                <h5>Cliente</h5>
+                <p><strong>Razón Social:</strong> {venta.cliente.razonSocial || venta.cliente.nombre}</p>
+                <p><strong>RUT:</strong> {venta.cliente.rut || '-'}</p>
+                <p><strong>Dirección:</strong> {venta.cliente.direccion || '-'}</p>
+              </Col>
+              <Col md={6} className="seller-details">
+                <h5>Vendedor</h5>
+                <p><strong>Nombre:</strong> {vendedor.nombre ? `${vendedor.nombre} ${vendedor.apellido || ''}` : vendedor.username}</p>
+                <p><strong>RUT:</strong> {vendedor.rut || '-'}</p>
+                <p><strong>Zona:</strong> {vendedor.zona || '-'}</p>
+              </Col>
+            </Row>
 
             <Table bordered responsive className="sales-note-table">
               <thead className="table-light">

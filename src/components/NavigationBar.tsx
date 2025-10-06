@@ -4,7 +4,7 @@
 import { Container, Nav, Navbar, NavDropdown, Button } from "react-bootstrap";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { FaBullhorn, FaUsers, FaBoxOpen, FaTags, FaCalendarAlt, FaChartBar, FaShoppingCart, FaCog, FaUserShield } from 'react-icons/fa';
+import { FaBullhorn, FaUsers, FaBoxOpen, FaTags, FaCalendarAlt, FaChartBar, FaShoppingCart, FaCog, FaUserShield, FaUserCircle } from 'react-icons/fa';
 
 export default function NavigationBar() {
   const { data: session, status } = useSession();
@@ -54,10 +54,13 @@ export default function NavigationBar() {
                       </NavDropdown>
                     </>
                   )}
-                  <Nav.Link as={Link} href="/configuracion" className="d-flex align-items-center">
-                    <FaCog className="me-2" /> Configuración
-                  </Nav.Link>
-                  <Button variant="outline-primary" onClick={() => signOut({ callbackUrl: '/login' })} className="ms-2">
+                  
+                  <NavDropdown title={<><FaUserCircle className="me-1" /> {session.user.name}</>} id="user-dropdown" align="end">
+                    <NavDropdown.Item as={Link} href="/perfil">Mi Perfil</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} href="/configuracion">Configuración</NavDropdown.Item>
+                  </NavDropdown>
+
+                  <Button variant="outline-primary" onClick={() => signOut({ callbackUrl: '/login' })} className="ms-3">
                     Logout
                   </Button>
                 </>

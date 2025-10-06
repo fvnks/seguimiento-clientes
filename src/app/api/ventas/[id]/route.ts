@@ -12,6 +12,11 @@ async function checkOwnership(userId: number, ventaId: number) {
   const venta = await prisma.venta.findUnique({
     where: { id: ventaId },
   });
+  // Allow admins to see any sale note
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.role === 'ADMIN') {
+    return true;
+  }
   return venta?.userId === userId;
 }
 
@@ -36,12 +41,21 @@ export async function GET(request: Request, { params }: Params) {
     const venta = await prisma.venta.findUnique({
       where: { id: ventaId },
       include: {
-        cliente: true, // Include full client details
+        cliente: true, 
         productosVendidos: {
           include: {
-            producto: true, // Include full product details for each line item
+            producto: true,
           },
         },
+        user: { // Include the user who made the sale
+          select: {
+            nombre: true,
+            apellido: true,
+            rut: true,
+            zona: true,
+            username: true,
+          }
+        }
       },
     });
 
@@ -79,7 +93,9 @@ export async function DELETE(request: Request, { params }: Params) {
     return NextResponse.json({ message: "ID de venta inválido" }, { status: 400 });
   }
 
-  if (!await checkOwnership(userId, ventaId)) {
+  // Admin can delete any sale, so we check ownership differently or skip
+  const isAdmin = (session.user as any).role === 'ADMIN';
+  if (!isAdmin && !await checkOwnership(userId, ventaId)) {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
 
