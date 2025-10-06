@@ -20,7 +20,7 @@ interface MapViewProps {
 }
 
 export default function MapView({ position }: MapViewProps) {
-  if (!position || !position[0] || !position[1]) {
+  if (!position || typeof position[0] !== 'number' || typeof position[1] !== 'number') {
     return <p>Ubicación no disponible.</p>;
   }
 
