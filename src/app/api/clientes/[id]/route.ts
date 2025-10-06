@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
+import { PaymentStatus } from "@/generated/prisma";
 
 interface Params {
   params: { id: string };
@@ -13,6 +14,41 @@ async function checkOwnership(userId: number, clienteId: number) {
     where: { id: clienteId },
   });
   return cliente?.userId === userId;
+}
+
+async function getFullClienteData(clienteId: number) {
+  const cliente = await prisma.cliente.findUnique({
+    where: { id: clienteId },
+    include: {
+      ventas: {
+        include: {
+          productosVendidos: {
+            include: {
+              producto: true,
+            },
+          },
+        },
+        orderBy: {
+          fecha: 'desc',
+        },
+      },
+    },
+  });
+
+  if (!cliente) return null;
+
+  // Calculate total for each sale
+  const clienteConVentasTotales = {
+    ...cliente,
+    ventas: cliente.ventas.map(venta => {
+      const total = venta.productosVendidos.reduce((acc, item) => {
+        return acc + (item.cantidad * item.precioAlMomento);
+      }, 0);
+      return { ...venta, total };
+    })
+  };
+
+  return clienteConVentasTotales;
 }
 
 export async function GET(request: Request, { params }: Params) {
@@ -32,40 +68,11 @@ export async function GET(request: Request, { params }: Params) {
   }
 
   try {
-    const cliente = await prisma.cliente.findUnique({
-      where: { id: clienteId },
-      include: {
-        ventas: {
-          include: {
-            productosVendidos: {
-              include: {
-                producto: true,
-              },
-            },
-          },
-          orderBy: {
-            fecha: 'desc',
-          },
-        },
-      },
-    });
-
-    if (!cliente) {
+    const clienteData = await getFullClienteData(clienteId);
+    if (!clienteData) {
       return NextResponse.json({ message: "Cliente no encontrado" }, { status: 404 });
     }
-
-    // Calculate total for each sale
-    const clienteConVentasTotales = {
-      ...cliente,
-      ventas: cliente.ventas.map(venta => {
-        const total = venta.productosVendidos.reduce((acc, item) => {
-          return acc + (item.cantidad * item.precioAlMomento);
-        }, 0);
-        return { ...venta, total };
-      })
-    };
-
-    return NextResponse.json(clienteConVentasTotales);
+    return NextResponse.json(clienteData);
   } catch (error) {
     console.error(`Error fetching cliente con id ${params.id}:`, error);
     return NextResponse.json(
@@ -93,30 +100,31 @@ export async function PUT(request: Request, { params }: Params) {
 
   try {
     const body = await request.json();
-    const { razonSocial, rut, email, telefono, direccion, latitud, longitud } = body;
+    const { razonSocial, rut, email, telefono, direccion, latitud, longitud, mediosDePago, paymentStatus } = body;
 
-    if (!razonSocial || !email) {
-      return NextResponse.json(
-        { message: "Razón Social y email son requeridos" },
-        { status: 400 }
-      );
+    const dataToUpdate: any = {};
+    if (razonSocial) {
+      dataToUpdate.razonSocial = razonSocial;
+      dataToUpdate.nombre = razonSocial;
     }
+    if (rut) dataToUpdate.rut = rut;
+    if (email) dataToUpdate.email = email;
+    if (telefono) dataToUpdate.telefono = telefono;
+    if (direccion) dataToUpdate.direccion = direccion;
+    if (latitud !== undefined) dataToUpdate.latitud = latitud;
+    if (longitud !== undefined) dataToUpdate.longitud = longitud;
+    if (mediosDePago !== undefined) dataToUpdate.mediosDePago = mediosDePago;
+    if (paymentStatus) dataToUpdate.paymentStatus = paymentStatus as PaymentStatus;
 
-    const updatedCliente = await prisma.cliente.update({
+    await prisma.cliente.update({
       where: { id: clienteId },
-      data: {
-        nombre: razonSocial, // Keep legacy field in sync
-        razonSocial,
-        rut,
-        email,
-        telefono,
-        direccion,
-        latitud,
-        longitud,
-      },
+      data: dataToUpdate,
     });
 
-    return NextResponse.json(updatedCliente);
+    // After updating, fetch the full data to return to the client
+    const updatedClienteData = await getFullClienteData(clienteId);
+
+    return NextResponse.json(updatedClienteData);
 
   } catch (error: any) {
     console.error(`Error updating cliente con id ${params.id}:`, error);
@@ -156,31 +164,25 @@ export async function DELETE(request: Request, { params }: Params) {
   }
 
   try {
-    // Use a transaction to delete all related data correctly
     await prisma.$transaction(async (tx) => {
-      // Find all sales for the client
       const ventas = await tx.venta.findMany({ where: { clienteId: clienteId } });
       const ventaIds = ventas.map(v => v.id);
 
       if (ventaIds.length > 0) {
-        // Delete all line items for those sales
         await tx.ventaProducto.deleteMany({
           where: { ventaId: { in: ventaIds } },
         });
-
-        // Delete all sales for the client
         await tx.venta.deleteMany({
           where: { clienteId: clienteId },
         });
       }
 
-      // Finally, delete the client
       await tx.cliente.delete({
         where: { id: clienteId },
       });
     });
 
-    return new NextResponse(null, { status: 204 }); // No Content
+    return new NextResponse(null, { status: 204 });
 
   } catch (error) {
     console.error(`Error deleting cliente con id ${params.id}:`, error);

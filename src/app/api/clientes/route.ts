@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
+import { PaymentStatus } from "@/generated/prisma";
 
 // GET /api/clientes?search=...
 export async function GET(request: NextRequest) {
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { razonSocial, rut, email, telefono, direccion, latitud, longitud } = body;
+    const { razonSocial, rut, email, telefono, direccion, latitud, longitud, mediosDePago, paymentStatus } = body;
 
     if (!razonSocial || !email) {
       return NextResponse.json(
@@ -77,6 +78,8 @@ export async function POST(request: Request) {
         direccion,
         latitud,
         longitud,
+        mediosDePago,
+        paymentStatus: paymentStatus as PaymentStatus, // Cast to enum type
         userId: userId,
       },
     });

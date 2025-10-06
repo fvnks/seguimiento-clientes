@@ -27,6 +27,7 @@ export default function NuevoClientePage() {
     nombre: "",
     email: "",
     telefono: "",
+    mediosDePago: "", // Added field
     direccion: "",
     latitud: -33.45694, // Default initial position (Santiago)
     longitud: -70.64827,
@@ -74,10 +75,13 @@ export default function NuevoClientePage() {
     e.preventDefault();
     setError(null);
 
-    if (!formData.nombre || !formData.email) {
-      setError("El nombre y el email son obligatorios.");
-      return;
-    }
+    // Use razonSocial for both nombre and razonSocial
+    const submissionData = {
+      ...formData,
+      razonSocial: formData.nombre,
+      latitud: parseFloat(formData.latitud as any),
+      longitud: parseFloat(formData.longitud as any),
+    };
 
     setIsSubmitting(true);
 
@@ -85,11 +89,7 @@ export default function NuevoClientePage() {
       const res = await fetch("/api/clientes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          latitud: parseFloat(formData.latitud as any),
-          longitud: parseFloat(formData.longitud as any),
-        }),
+        body: JSON.stringify(submissionData),
       });
 
       if (!res.ok) {
@@ -121,7 +121,7 @@ export default function NuevoClientePage() {
         <Row>
           <Col md={6}>
             <Form.Group className="mb-3" controlId="nombre">
-              <Form.Label>Nombre</Form.Label>
+              <Form.Label>Nombre o Razón Social</Form.Label>
               <Form.Control
                 type="text"
                 name="nombre"
@@ -158,6 +158,20 @@ export default function NuevoClientePage() {
             </Form.Group>
           </Col>
           <Col md={6}>
+            <Form.Group className="mb-3" controlId="mediosDePago">
+              <Form.Label>Medios de Pago (ej. Efectivo, Tarjeta)</Form.Label>
+              <Form.Control
+                type="text"
+                name="mediosDePago"
+                value={formData.mediosDePago}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        <Row>
+          <Col>
             <Form.Group className="mb-3" controlId="direccion">
               <Form.Label>Dirección</Form.Label>
               <InputGroup>

@@ -11,47 +11,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Cliente {
-  id          Int      @id @default(autoincrement())
-  nombre      String   // Legacy, to be deprecated
-  razonSocial String?
-  rut         String?  @unique
-  email       String   @unique
-  telefono    String?
-  direccion   String?
-  latitud     Float?
-  longitud    Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  ventas      Venta[]
+enum PaymentStatus {
+  DEUDOR
+  PAGADO
+  PENDIENTE
+}
 
-  user      User    @relation(fields: [userId], references: [id])
-  userId    Int
+model Cliente {
+  id            Int           @id @default(autoincrement())
+  nombre        String        // Legacy, to be deprecated
+  razonSocial   String?
+  rut           String?       @unique
+  email         String        @unique
+  telefono      String?
+  direccion     String?
+  latitud       Float?
+  longitud      Float?
+  mediosDePago  String?       @db.Text
+  paymentStatus PaymentStatus @default(PENDIENTE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  ventas        Venta[]
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 }
 
 model Venta {
-  id              Int             @id @default(autoincrement())
-  fecha           DateTime
-  descripcion     String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  cliente         Cliente         @relation(fields: [clienteId], references: [id])
-  clienteId       Int
+  id                Int             @id @default(autoincrement())
+  fecha             DateTime
+  descripcion       String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  cliente           Cliente         @relation(fields: [clienteId], references: [id])
+  clienteId         Int
   productosVendidos VentaProducto[]
 
-  user      User    @relation(fields: [userId], references: [id])
-  userId    Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 }
 
 model VentaProducto {
-  id               Int      @id @default(autoincrement())
-  cantidad         Int
-  precioAlMomento  Float // Price of the product at the time of sale
-  
-  venta            Venta    @relation(fields: [ventaId], references: [id])
-  ventaId          Int
-  producto         Producto @relation(fields: [productoId], references: [id])
-  productoId       Int
+  id              Int      @id @default(autoincrement())
+  cantidad        Int
+  precioAlMomento Float // Price of the product at the time of sale
+
+  venta      Venta    @relation(fields: [ventaId], references: [id])
+  ventaId    Int
+  producto   Producto @relation(fields: [productoId], references: [id])
+  productoId Int
 }
 
 model Producto {
@@ -86,13 +94,12 @@ enum Role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  password      String
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   clientes      Cliente[]
   ventas        Venta[]
   announcements Announcement[]

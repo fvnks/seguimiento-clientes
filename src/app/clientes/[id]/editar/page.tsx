@@ -13,6 +13,7 @@ import {
 } from "react-bootstrap";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { PaymentStatus } from "@/generated/prisma";
 
 // Dynamically import the MapSelector component
 const MapSelector = dynamic(() => import("@/components/MapSelector"), {
@@ -33,10 +34,12 @@ export default function EditarClientePage() {
     direccion: "",
     latitud: 0,
     longitud: 0,
+    mediosDePago: "",
+    paymentStatus: "PENDIENTE" as PaymentStatus,
   });
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // For initial data loading
-  const [isSubmitting, setIsSubmitting] = useState(false); // For form submission
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -54,8 +57,10 @@ export default function EditarClientePage() {
           email: data.email,
           telefono: data.telefono || "",
           direccion: data.direccion || "",
-          latitud: data.latitud || -33.45694, // Default to Santiago if null
+          latitud: data.latitud || -33.45694,
           longitud: data.longitud || -70.64827,
+          mediosDePago: data.mediosDePago || "",
+          paymentStatus: data.paymentStatus || "PENDIENTE",
         });
       } catch (err: any) {
         setError(err.message);
@@ -67,9 +72,14 @@ export default function EditarClientePage() {
     fetchCliente();
   }, [id]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value as PaymentStatus }));
   };
 
   const handleLocationChange = (lat: number, lng: number) => {
@@ -99,7 +109,6 @@ export default function EditarClientePage() {
         throw new Error(errorData.message || "Error al actualizar el cliente");
       }
 
-      // Redirect to the client's detail page on successful update
       router.push(`/clientes`);
       router.refresh();
     } catch (err: any) {
@@ -122,12 +131,24 @@ export default function EditarClientePage() {
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h1>Editar Cliente</h1>
-        <Link href={`/clientes`} passHref>
-          <Button variant="secondary">Cancelar</Button>
-        </Link>
+        <div>
+          <Button variant="secondary" as={Link} href="/clientes" className="me-2">
+            Cancelar
+          </Button>
+          <Button variant="primary" type="submit" form="edit-cliente-form" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" />
+                <span className="ms-2">Guardando...</span>
+              </>
+            ) : (
+              "Guardar Cambios"
+            )}
+          </Button>
+        </div>
       </div>
 
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} id="edit-cliente-form">
         {error && <Alert variant="danger">{error}</Alert>}
 
         <Row>
@@ -183,6 +204,36 @@ export default function EditarClientePage() {
         </Row>
 
         <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="mediosDePago">
+              <Form.Label>Medios de Pago</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                name="mediosDePago"
+                value={formData.mediosDePago}
+                onChange={handleInputChange}
+                placeholder="Ej: Efectivo, Transferencia, Tarjeta de Crédito"
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="paymentStatus">
+              <Form.Label>Estado de Pago</Form.Label>
+              <Form.Select
+                name="paymentStatus"
+                value={formData.paymentStatus}
+                onChange={handleSelectChange}
+              >
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="PAGADO">Pagado</option>
+                <option value="DEUDOR">Deudor</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
+
+        <Row>
            <Col md={12}>
             <Form.Group className="mb-3" controlId="direccion">
               <Form.Label>Dirección</Form.Label>
@@ -196,30 +247,20 @@ export default function EditarClientePage() {
           </Col>
         </Row>
 
-        <Form.Group className="mb-3" controlId="mapa">
-          <Form.Label>Ubicación</Form.Label>
-          <div style={{ height: "400px", width: "100%" }}>
-            <MapSelector
-              onLocationChange={handleLocationChange}
-              position={[formData.latitud, formData.longitud]}
-            />
-          </div>
-          <Form.Text>
-            Arrastra el marcador o haz clic en el mapa para seleccionar la
-            ubicación.
-          </Form.Text>
-        </Form.Group>
+        <Row>
+          <Col>
+            <Form.Group className="mb-3" controlId="mapa">
+              <Form.Label>Ubicación</Form.Label>
+              <div style={{ height: "300px", width: "100%" }}>
+                <MapSelector
+                  onLocationChange={handleLocationChange}
+                  position={[formData.latitud, formData.longitud]}
+                />
+              </div>
+            </Form.Group>
+          </Col>
+        </Row>
 
-        <Button variant="primary" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Spinner as="span" animation="border" size="sm" />
-              <span className="ms-2">Guardando Cambios...</span>
-            </>
-          ) : (
-            "Guardar Cambios"
-          )}
-        </Button>
       </Form>
     </Container>
   );
