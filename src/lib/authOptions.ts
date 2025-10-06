@@ -19,25 +19,30 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { username: credentials.username },
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { username: credentials.username },
+          });
 
-        console.log("User found in DB:", user);
+          console.log("User found in DB:", user);
 
-        if (user) {
-          const passwordMatch = await bcrypt.compare(credentials.password, user.password);
-          console.log("Password match result:", passwordMatch);
+          if (user) {
+            const passwordMatch = await bcrypt.compare(credentials.password, user.password);
+            console.log("Password match result:", passwordMatch);
 
-          if (passwordMatch) {
-            console.log("Authentication successful, returning user object.");
-            return { id: user.id.toString(), name: user.username, role: user.role };
+            if (passwordMatch) {
+              console.log("Authentication successful, returning user object.");
+              return { id: user.id.toString(), name: user.username, role: user.role };
+            } else {
+              console.log("Password mismatch, returning null.");
+              return null;
+            }
           } else {
-            console.log("Password mismatch, returning null.");
+            console.log("User not found, returning null.");
             return null;
           }
-        } else {
-          console.log("User not found, returning null.");
+        } catch (error) {
+          console.error("Database error during authorization:", error);
           return null;
         }
       },
