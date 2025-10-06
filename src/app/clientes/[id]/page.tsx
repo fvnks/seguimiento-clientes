@@ -149,7 +149,7 @@ export default function ClienteDetailPage() {
               <ListGroup.Item><b>Email:</b> {cliente.email}</ListGroup.Item>
               <ListGroup.Item><b>Teléfono:</b> {cliente.telefono || 'N/A'}</ListGroup.Item>
               <ListGroup.Item><b>Dirección:</b> {cliente.direccion || 'N/A'}</ListGroup.Item>
-               {cliente.latitud && cliente.longitud && (
+               {cliente.latitud != null && cliente.longitud != null && (
                 <ListGroup.Item>
                   <Button as="a" href={`https://www.google.com/maps/search/?api=1&query=${cliente.latitud},${cliente.longitud}`} target="_blank" rel="noopener noreferrer" variant="outline-primary" size="sm" className="me-2">Google Maps</Button>
                   <Button as="a" href={`https://waze.com/ul?ll=${cliente.latitud},${cliente.longitud}&navigate=yes`} target="_blank" rel="noopener noreferrer" variant="outline-info" size="sm">Waze</Button>
@@ -181,7 +181,7 @@ export default function ClienteDetailPage() {
           <Card className="shadow-sm" style={{ minHeight: '450px' }}>
             <Card.Header><h4>Ubicación</h4></Card.Header>
             <Card.Body className="p-0">
-              {cliente.latitud && cliente.longitud ? (
+              {cliente.latitud != null && cliente.longitud != null ? (
                 <MapView position={[cliente.latitud, cliente.longitud]} />
               ) : (
                 <div className="d-flex align-items-center justify-content-center h-100"><p>Ubicación no disponible.</p></div>
