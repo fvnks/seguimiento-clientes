@@ -3,6 +3,26 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/authOptions';
 import { prisma } from '@/lib/prisma';
 
+export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || (session.user as any)?.role !== 'ADMIN') {
+    return new NextResponse(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
+  }
+
+  try {
+    const announcements = await prisma.announcement.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    return NextResponse.json(announcements, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching announcements:", error);
+    return new NextResponse(JSON.stringify({ error: 'Error al obtener los anuncios' }), { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 

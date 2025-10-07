@@ -44,11 +44,12 @@ export async function GET() {
       return {
         id: venta.id,
         fecha: venta.fecha.toISOString(),
-        monto: monto,
+        total: monto,
         descripcion: venta.descripcion,
         cliente: {
           nombre: venta.cliente.razonSocial || venta.cliente.nombre,
         },
+        productosVendidos: venta.productosVendidos,
       };
     });
 
