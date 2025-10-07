@@ -180,7 +180,7 @@ export default function ClienteDetailPage() {
         <Col lg={8}>
           <Card className="shadow-sm" style={{ minHeight: '450px' }}>
             <Card.Header><h4>Ubicación</h4></Card.Header>
-            <Card.Body className="p-0">
+            <Card.Body className="p-0 h-100">
               {cliente.latitud != null && cliente.longitud != null ? (
                 <MapView position={[cliente.latitud, cliente.longitud]} />
               ) : (
