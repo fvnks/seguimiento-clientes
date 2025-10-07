@@ -69,6 +69,7 @@ export default function ClienteDetailPage() {
         throw new Error(errorData.message || 'Error al obtener los datos del cliente');
       }
       const data = await res.json();
+      console.log("Cliente data:", data);
       setCliente(data);
     } catch (err: any) {
       setError(err.message);
