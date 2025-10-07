@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert, Spinner, ListGroup } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner, ListGroup, Modal } from 'react-bootstrap';
+import { useRouter } from 'next/navigation';
 
 // Define types
 interface Announcement {
   id: number;
   content: string;
   createdAt: string;
+  isActive: boolean;
 }
 
 interface NewsArticle {
@@ -21,9 +23,10 @@ interface NewsArticle {
 }
 
 export default function CommunicationsPage() {
+  const router = useRouter();
   // State for announcements
   const [announcementContent, setAnnouncementContent] = useState('');
-  const [activeAnnouncement, setActiveAnnouncement] = useState<Announcement | null>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [announcementLoading, setAnnouncementLoading] = useState(false);
   const [announcementError, setAnnouncementError] = useState('');
 
@@ -34,35 +37,42 @@ export default function CommunicationsPage() {
   const [newsLoading, setNewsLoading] = useState(false);
   const [newsError, setNewsError] = useState('');
 
-  // Fetch initial data
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      // Fetch latest announcement
-      try {
-        const res = await fetch('/api/announcements/latest');
-        const data = await res.json();
-        if (res.ok) {
-          setActiveAnnouncement(data);
-        }
-      } catch (error) { console.error(error); }
+  // State for editing
+  const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
 
-      // Fetch news articles
-      try {
-        setNewsLoading(true);
-        const res = await fetch('/api/news');
-        const data = await res.json();
-        if (res.ok) {
-          setNewsList(data);
-        } else {
-          setNewsError(data.error || 'Error al cargar noticias');
-        }
-      } catch (error: any) {
-        setNewsError(error.message);
-      } finally {
-        setNewsLoading(false);
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch('/api/admin/announcements');
+      const data = await res.json();
+      if (res.ok) {
+        setAnnouncements(data);
+      } else {
+        setAnnouncementError(data.error || 'Error al cargar anuncios');
       }
-    };
-    fetchInitialData();
+    } catch (error: any) { setAnnouncementError(error.message); }
+  };
+
+  const fetchNews = async () => {
+    try {
+      setNewsLoading(true);
+      const res = await fetch('/api/news');
+      const data = await res.json();
+      if (res.ok) {
+        setNewsList(data);
+      } else {
+        setNewsError(data.error || 'Error al cargar noticias');
+      }
+    } catch (error: any) {
+      setNewsError(error.message);
+    } finally {
+      setNewsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnnouncements();
+    fetchNews();
   }, []);
 
   const handleAnnouncementSubmit = async (e: React.FormEvent) => {
@@ -77,8 +87,8 @@ export default function CommunicationsPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setActiveAnnouncement(data);
         setAnnouncementContent('');
+        fetchAnnouncements(); // Refresh list
       } else {
         setAnnouncementError(data.error || 'Error al enviar anuncio');
       }
@@ -104,6 +114,7 @@ export default function CommunicationsPage() {
         setNewsList([newArticle, ...newsList]);
         setNewsTitle('');
         setNewsContent('');
+        fetchNews(); // Refresh list
       } else {
         setNewsError(newArticle.error || 'Error al publicar noticia');
       }
@@ -111,6 +122,56 @@ export default function CommunicationsPage() {
       setNewsError(error.message);
     } finally {
       setNewsLoading(false);
+    }
+  };
+
+  const handleDeleteNews = async (id: number) => {
+    if (confirm('¿Estás seguro de que quieres eliminar esta noticia?')) {
+      try {
+        const res = await fetch(`/api/admin/news/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          fetchNews(); // Refresh list
+        } else {
+          const data = await res.json();
+          setNewsError(data.error || 'Error al eliminar la noticia');
+        }
+      } catch (error: any) {
+        setNewsError(error.message);
+      }
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id: number) => {
+    if (confirm('¿Estás seguro de que quieres eliminar este anuncio?')) {
+      try {
+        const res = await fetch(`/api/admin/announcements/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          fetchAnnouncements(); // Refresh list
+        } else {
+          const data = await res.json();
+          setAnnouncementError(data.error || 'Error al eliminar el anuncio');
+        }
+      } catch (error: any) {
+        setAnnouncementError(error.message);
+      }
+    }
+  };
+
+  const handleSetActive = async (id: number) => {
+    try {
+      const res = await fetch(`/api/admin/announcements/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: true }),
+      });
+      if (res.ok) {
+        fetchAnnouncements();
+      } else {
+        const data = await res.json();
+        setAnnouncementError(data.error || 'Error al activar el anuncio');
+      }
+    } catch (error: any) {
+      setAnnouncementError(error.message);
     }
   };
 
@@ -124,7 +185,6 @@ export default function CommunicationsPage() {
             <Card.Header as="h5">Anuncios Globales</Card.Header>
             <Card.Body>
               <Card.Title>Enviar un nuevo anuncio</Card.Title>
-              <Card.Text>El anuncio se mostrará como una notificación a todos los usuarios. El envío de un nuevo anuncio desactivará el anterior.</Card.Text>
               <Form onSubmit={handleAnnouncementSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Label>Contenido del Anuncio</Form.Label>
@@ -142,12 +202,19 @@ export default function CommunicationsPage() {
                 </Button>
               </Form>
               <hr />
-              <h5>Anuncio Activo Actual</h5>
-              {activeAnnouncement ? (
-                <Alert variant="info">{activeAnnouncement.content}</Alert>
-              ) : (
-                <Alert variant="secondary">No hay ningún anuncio activo.</Alert>
-              )}
+              <h5>Anuncios Creados</h5>
+              <ListGroup>
+                {announcements.map(ann => (
+                  <ListGroup.Item key={ann.id} variant={ann.isActive ? 'success' : ''}>
+                    {ann.content}
+                    <div className="mt-2">
+                      <Button variant="outline-primary" size="sm" onClick={() => router.push(`/admin/comunicaciones/announcements/${ann.id}/editar`)}>Editar</Button>{' '}
+                      <Button variant="outline-danger" size="sm" onClick={() => handleDeleteAnnouncement(ann.id)}>Eliminar</Button>{' '}
+                      {!ann.isActive && <Button variant="outline-success" size="sm" onClick={() => handleSetActive(ann.id)}>Activar</Button>}
+                    </div>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
             </Card.Body>
           </Card>
         </Col>
@@ -191,6 +258,10 @@ export default function CommunicationsPage() {
                   <ListGroup.Item key={article.id}>
                     <strong>{article.title}</strong>
                     <small className="d-block text-muted">Publicado el {new Date(article.createdAt).toLocaleDateString()}</small>
+                    <div className="mt-2">
+                      <Button variant="outline-primary" size="sm" onClick={() => router.push(`/admin/comunicaciones/news/${article.id}/editar`)}>Editar</Button>{' '}
+                      <Button variant="outline-danger" size="sm" onClick={() => handleDeleteNews(article.id)}>Eliminar</Button>
+                    </div>
                   </ListGroup.Item>
                 ))}
               </ListGroup>
