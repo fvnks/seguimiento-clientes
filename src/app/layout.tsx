@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from 'next/font/google';
 import "./custom-theme.scss";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import NavigationBar from "@/components/NavigationBar";
 import AnnouncementToast from "@/components/AnnouncementToast"; // Import the component
 

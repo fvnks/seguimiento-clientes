@@ -1,7 +1,7 @@
 'use client';
 
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+
 import L from "leaflet";
 
 // Fix for default icon issue with webpack
@@ -28,7 +28,7 @@ export default function MapView({ position }: MapViewProps) {
     <MapContainer 
       center={position} 
       zoom={15} 
-      style={{ height: "100%", width: "100%" }} 
+      style={{ height: "100%", width: "100%", border: "1px solid red" }} 
       scrollWheelZoom={false}
     >
       <TileLayer

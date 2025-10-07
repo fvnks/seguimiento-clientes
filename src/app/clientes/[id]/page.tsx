@@ -58,6 +58,7 @@ export default function ClienteDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   const fetchCliente = useCallback(async () => {
     if (!id) return;
@@ -80,6 +81,7 @@ export default function ClienteDetailPage() {
 
   useEffect(() => {
     fetchCliente();
+    setIsClient(true);
   }, [fetchCliente]);
 
   const handleStatusChange = async (newStatus: PaymentStatus) => {
@@ -182,8 +184,10 @@ export default function ClienteDetailPage() {
           <Card className="shadow-sm" style={{ minHeight: '450px' }}>
             <Card.Header><h4>Ubicación</h4></Card.Header>
             <Card.Body className="p-0 h-100">
-              {cliente.latitud != null && cliente.longitud != null ? (
-                <MapView position={[cliente.latitud, cliente.longitud]} />
+              {isClient && cliente.latitud != null && cliente.longitud != null ? (
+                <div style={{ height: "400px" }}>
+                  <MapView position={[cliente.latitud, cliente.longitud]} />
+                </div>
               ) : (
                 <div className="d-flex align-items-center justify-content-center h-100"><p>Ubicación no disponible.</p></div>
               )}
