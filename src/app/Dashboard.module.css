@@ -1,0 +1,46 @@
+/* Oculta la vista de tarjetas en pantallas de escritorio (md y superiores) */
+.cardView {
+    display: none;
+}
+
+/* Estilos para las tarjetas de ventas individuales en vista móvil */
+.saleCard {
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+}
+
+.saleCardHeader {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: bold;
+}
+
+.saleCardBody {
+    padding: 1rem;
+}
+
+.saleCardBody div {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.saleCardBody span:first-child {
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Media query para pantallas pequeñas (móviles, menores a 768px) */
+@media (max-width: 767.98px) {
+    /* Oculta la tabla de escritorio en móviles */
+    .tableView {
+        display: none;
+    }
+
+    /* Muestra la vista de tarjetas en móviles */
+    .cardView {
+        display: block;
+    }
+}

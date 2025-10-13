@@ -1,0 +1,35 @@
+.calendarContainer {
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+.rbc-toolbar {
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.rbc-toolbar button {
+  border-radius: 8px !important;
+  border: 1px solid #ccc !important;
+}
+
+.rbc-toolbar button:hover, .rbc-toolbar button:focus {
+  background-color: #f0f0f0 !important;
+}
+
+.rbc-event {
+  border-radius: 5px !important;
+  background-color: #3174ad !important;
+}
+
+.rbc-day-slot .rbc-event {
+  border: 1px solid #2a628d !important;
+}
+
+.rbc-slot-selection {
+  background-color: rgba(49, 116, 173, 0.5) !important;
+}

@@ -1,0 +1,161 @@
+
+/* General styles for the printable view */
+.printable-area {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.printable-area h1, .printable-area h2, .printable-area h3, .printable-area h4, .printable-area h5, .printable-area h6 {
+    font-weight: 600;
+}
+
+.company-details p, .client-details p, .seller-details p {
+    margin-bottom: 0.1rem;
+    font-size: 0.9rem;
+}
+
+.company-details h4 {
+    margin-bottom: 0.3rem;
+}
+
+.sales-note-header {
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sales-note-table {
+    font-size: 0.9rem;
+    table-layout: fixed; /* Helps with column widths */
+    width: 100%;
+}
+
+.sales-note-table th {
+    background-color: #f8f9fa;
+}
+
+.sales-note-table .product-name-cell {
+    font-size: 0.8rem; /* Smaller font for product name */
+    word-wrap: break-word; /* Break long words if necessary */
+}
+
+.sales-note-table th:nth-child(1), .sales-note-table td:nth-child(1) { width: 15%; } /* Codigo */
+.sales-note-table th:nth-child(2), .sales-note-table td:nth-child(2) { width: 40%; } /* Producto */
+.sales-note-table th:nth-child(3), .sales-note-table td:nth-child(3) { width: 15%; text-align: right; } /* Cantidad */
+.sales-note-table th:nth-child(4), .sales-note-table td:nth-child(4) { width: 15%; text-align: right; } /* Precio Unitario */
+.sales-note-table th:nth-child(5), .sales-note-table td:nth-child(5) { width: 15%; text-align: right; } /* Total Linea */
+
+
+.sales-note-footer {
+    margin-top: 1.5rem;
+    text-align: right;
+}
+
+.sales-note-footer .total-row {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Print-specific styles */
+@media print {
+    body {
+        background-color: #fff !important;
+        font-size: 8pt; /* Smaller base font size for print */
+    }
+
+    .no-print,
+    .navbar-glass {
+        display: none !important;
+    }
+
+    .printable-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .printable-area {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    @page {
+        size: A4; /* Common paper size */
+        margin: 0.5in;
+    }
+
+    .sales-note-header {
+        border-bottom: 2px solid #6c757d;
+    }
+
+    .sales-note-table th, .sales-note-table td {
+        padding: 0.2rem;
+    }
+
+    .sales-note-table .product-name-cell {
+        font-size: 7pt;
+    }
+
+    .company-details p, .client-details p, .seller-details p {
+        font-size: 8pt;
+    }
+    
+    .company-details h4 {
+        font-size: 12pt;
+    }
+
+    h2 {
+        font-size: 14pt;
+    }
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+    .sales-note-header .text-end {
+        text-align: left !important;
+        margin-top: 1rem;
+    }
+
+    .sales-note-header .col-xs-7,
+    .sales-note-header .col-xs-5 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .printable-area {
+        padding: 0.5rem !important;
+    }
+
+    .sales-note-header h2 {
+        font-size: 1.4rem;
+    }
+
+    .company-details h4 {
+        font-size: 1.2rem;
+    }
+
+    .company-details p,
+    .client-details p {
+        font-size: 0.85rem;
+    }
+
+    .sales-note-table {
+        font-size: 0.75rem;
+    }
+
+    .sales-note-table .product-name-cell {
+        font-size: 0.7rem;
+    }
+
+    .sales-note-footer .total-row {
+        font-size: 1rem;
+    }
+
+    .sales-note-footer .col-xs-4 {
+        width: 100%;
+        offset: 0;
+    }
+}
