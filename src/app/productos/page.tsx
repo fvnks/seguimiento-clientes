@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Container, Table, Button, Alert, Spinner, Form, InputGroup, Card, Pagination } from 'react-bootstrap';
 import Link from 'next/link';
 import ProductImporter from '@/components/ProductImporter';
+import styles from './Productos.module.css';
 
 interface Producto {
   id: number;
@@ -170,43 +171,91 @@ export default function ProductosPage() {
     }
 
     return (
-      <Card className="shadow-sm">
-        <Table striped hover responsive className="responsive-table mb-0">
-          <thead className="table-light">
-            <tr>
-              <th className="py-3 px-3">Código</th>
-              <th className="py-3 px-3">Nombre</th>
-              <th className="py-3 px-3">Categoría</th>
-              <th className="py-3 px-3">Precio Neto</th>
-              <th className="py-3 px-3">Precio Total (IVA incl.)</th>
-              <th className="py-3 px-3">Precio Kilo</th>
-              <th className="py-3 px-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productos.map((producto) => (
-              <tr key={producto.id}>
-                <td data-label="Código" className="py-3 px-3">{producto.codigo}</td>
-                <td data-label="Nombre" className="py-3 px-3">{producto.nombre}</td>
-                <td data-label="Categoría" className="py-3 px-3">{producto.categoria?.nombre || '-'}</td>
-                <td data-label="Precio Neto" className="py-3 px-3">{formatCurrency(producto.precioNeto)}</td>
-                <td data-label="Precio Total" className="py-3 px-3">{formatCurrency(producto.precioTotal)}</td>
-                <td data-label="Precio Kilo" className="py-3 px-3">{formatCurrency(producto.precioKilo)}</td>
-                <td data-label="Acciones" className="py-3 px-3">
+      <>
+        {/* Vista de Tabla para Escritorio */}
+        <div className={styles.tableView}>
+          <Card className="shadow-sm">
+            <Table striped hover responsive className="mb-0">
+              <thead className="table-light">
+                <tr>
+                  <th className="py-3 px-3">Código</th>
+                  <th className="py-3 px-3">Nombre</th>
+                  <th className="py-3 px-3">Categoría</th>
+                  <th className="py-3 px-3">Precio Neto</th>
+                  <th className="py-3 px-3">Precio Total (IVA incl.)</th>
+                  <th className="py-3 px-3">Precio Kilo</th>
+                  <th className="py-3 px-3">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productos.map((producto) => (
+                  <tr key={producto.id}>
+                    <td className="py-3 px-3">{producto.codigo}</td>
+                    <td className="py-3 px-3">{producto.nombre}</td>
+                    <td className="py-3 px-3">{producto.categoria?.nombre || '-'}</td>
+                    <td className="py-3 px-3">{formatCurrency(producto.precioNeto)}</td>
+                    <td className="py-3 px-3">{formatCurrency(producto.precioTotal)}</td>
+                    <td className="py-3 px-3">{formatCurrency(producto.precioKilo)}</td>
+                    <td className="py-3 px-3">
+                      <div className={styles.actions}>
+                        <Link href={`/productos/${producto.id}/editar`} passHref>
+                          <Button variant="outline-secondary" size="sm">
+                            Editar
+                          </Button>
+                        </Link>
+                        <Button variant="outline-danger" size="sm" disabled>
+                          Eliminar
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card>
+        </div>
+
+        {/* Vista de Tarjetas para Móvil */}
+        <div className={styles.cardView}>
+          {productos.map((producto) => (
+            <div key={producto.id} className={styles.productCard}>
+              <div className={styles.productCardHeader}>
+                {producto.nombre}
+              </div>
+              <div className={styles.productCardBody}>
+                <div>
+                  <span>Código:</span>
+                  <span>{producto.codigo}</span>
+                </div>
+                <div>
+                  <span>Categoría:</span>
+                  <span>{producto.categoria?.nombre || '-'}</span>
+                </div>
+                <div>
+                  <span>Precio Neto:</span>
+                  <span>{formatCurrency(producto.precioNeto)}</span>
+                </div>
+                <div>
+                  <span>Precio Total:</span>
+                  <span>{formatCurrency(producto.precioTotal)}</span>
+                </div>
+                <div>
+                  <span>Precio Kilo:</span>
+                  <span>{formatCurrency(producto.precioKilo)}</span>
+                </div>
+                <div className={styles.actions}>
                   <Link href={`/productos/${producto.id}/editar`} passHref>
-                    <Button variant="outline-secondary" size="sm" className="me-2">
-                      Editar
-                    </Button>
+                    <Button variant="secondary" size="sm">Editar</Button>
                   </Link>
-                  <Button variant="outline-danger" size="sm" disabled>
+                  <Button variant="danger" size="sm" disabled>
                     Eliminar
                   </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
     );
   };
 

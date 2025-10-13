@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Container, Table, Button, Alert, Spinner, Form, InputGroup, Card } from 'react-bootstrap';
 import Link from 'next/link';
+import styles from './Clientes.module.css';
 
 // Define a type for the client object for type safety
 interface Cliente {
@@ -99,41 +100,79 @@ export default function ClientesPage() {
     }
 
     return (
-      <Card className="shadow-sm">
-        <Table striped hover responsive className="responsive-table mb-0">
-          <thead className="table-light">
-            <tr>
-              <th className="py-3 px-3">Razón Social</th>
-              <th className="py-3 px-3">RUT</th>
-              <th className="py-3 px-3">Email</th>
-              <th className="py-3 px-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clientes.map((cliente) => (
-              <tr key={cliente.id}>
-                <td data-label="Razón Social" className="py-3 px-3">
-                  <Link href={`/clientes/${cliente.id}`} style={{ textDecoration: 'none' }}>
-                    {cliente.razonSocial || cliente.nombre}
-                  </Link>
-                </td>
-                <td data-label="RUT" className="py-3 px-3">{cliente.rut || '-'}</td>
-                <td data-label="Email" className="py-3 px-3">{cliente.email}</td>
-                <td data-label="Acciones" className="py-3 px-3">
+      <>
+        {/* Vista de Tabla para Escritorio */}
+        <div className={styles.tableView}>
+          <Card className="shadow-sm">
+            <Table striped hover responsive className="mb-0">
+              <thead className="table-light">
+                <tr>
+                  <th className="py-3 px-3">Razón Social</th>
+                  <th className="py-3 px-3">RUT</th>
+                  <th className="py-3 px-3">Email</th>
+                  <th className="py-3 px-3">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clientes.map((cliente) => (
+                  <tr key={cliente.id}>
+                    <td className="py-3 px-3">
+                      <Link href={`/clientes/${cliente.id}`} style={{ textDecoration: 'none' }}>
+                        {cliente.razonSocial || cliente.nombre}
+                      </Link>
+                    </td>
+                    <td className="py-3 px-3">{cliente.rut || '-'}</td>
+                    <td className="py-3 px-3">{cliente.email}</td>
+                    <td className="py-3 px-3">
+                      <div className={styles.actions}>
+                        <Link href={`/clientes/${cliente.id}/editar`} passHref>
+                          <Button variant="outline-secondary" size="sm">
+                            Editar
+                          </Button>
+                        </Link>
+                        <Button variant="outline-danger" size="sm" onClick={() => handleDelete(cliente.id)}>
+                          Eliminar
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card>
+        </div>
+
+        {/* Vista de Tarjetas para Móvil */}
+        <div className={styles.cardView}>
+          {clientes.map((cliente) => (
+            <div key={cliente.id} className={styles.clientCard}>
+              <div className={styles.clientCardHeader}>
+                <Link href={`/clientes/${cliente.id}`} style={{ textDecoration: 'none' }}>
+                  {cliente.razonSocial || cliente.nombre}
+                </Link>
+              </div>
+              <div className={styles.clientCardBody}>
+                <div>
+                  <span>RUT:</span>
+                  <span>{cliente.rut || '-'}</span>
+                </div>
+                <div>
+                  <span>Email:</span>
+                  <span>{cliente.email}</span>
+                </div>
+                <div className={styles.actions}>
                   <Link href={`/clientes/${cliente.id}/editar`} passHref>
-                    <Button variant="outline-secondary" size="sm" className="me-2">
-                      Editar
-                    </Button>
+                    <Button variant="secondary" size="sm">Editar</Button>
                   </Link>
-                  <Button variant="outline-danger" size="sm" onClick={() => handleDelete(cliente.id)}>
+                  <Button variant="danger" size="sm" onClick={() => handleDelete(cliente.id)}>
                     Eliminar
                   </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
     );
   };
 

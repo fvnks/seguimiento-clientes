@@ -1,0 +1,55 @@
+/* Oculta la vista de tarjetas en pantallas de escritorio (md y superiores) */
+.cardView {
+    display: none;
+}
+
+/* Estilos para las tarjetas de clientes individuales en vista móvil */
+.clientCard {
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    background-color: var(--bs-card-bg, #fff);
+}
+
+.clientCardHeader {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.clientCardBody {
+    padding: 1rem;
+}
+
+.clientCardBody div {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.clientCardBody span:first-child {
+    font-weight: 500;
+    color: #495057;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Media query para pantallas pequeñas (móviles, menores a 768px) */
+@media (max-width: 767.98px) {
+    /* Oculta la tabla de escritorio en móviles */
+    .tableView {
+        display: none;
+    }
+
+    /* Muestra la vista de tarjetas en móviles */
+    .cardView {
+        display: block;
+    }
+}
