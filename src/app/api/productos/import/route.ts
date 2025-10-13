@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import xlsx = require('xlsx');
+import * as xlsx from 'xlsx';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,11 +15,22 @@ export async function POST(request: NextRequest) {
     const workbook = xlsx.read(buffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(sheet);
+    const raw_data = xlsx.utils.sheet_to_json(sheet);
 
-    if (data.length === 0) {
+    if (raw_data.length === 0) {
         return NextResponse.json({ message: "El archivo de Excel está vacío o tiene un formato incorrecto." }, { status: 400 });
     }
+
+    // Normalize keys by trimming whitespace
+    const data = raw_data.map((row: any) => {
+        const newRow: { [key: string]: any } = {};
+        for (const key in row) {
+            if (Object.prototype.hasOwnProperty.call(row, key)) {
+                newRow[key.trim()] = row[key];
+            }
+        }
+        return newRow;
+    });
 
     // --- Column Mapping --- 
     const columnMapping = {

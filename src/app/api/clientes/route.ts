@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 import { PaymentStatus } from "@/generated/prisma";
 
-// GET /api/clientes?search=...&page=...&pageSize=...
+// GET /api/clientes?search=...
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
@@ -15,8 +15,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const search = request.nextUrl.searchParams.get('search');
-    const pageParam = request.nextUrl.searchParams.get('page');
-    const pageSizeParam = request.nextUrl.searchParams.get('pageSize');
 
     const userWhereClause = {
       userId: userId,
@@ -33,38 +31,15 @@ export async function GET(request: NextRequest) {
         }
       : {};
 
-    const where = { ...userWhereClause, ...searchWhereClause };
+    const clientes = await prisma.cliente.findMany({
+      where: { ...userWhereClause, ...searchWhereClause },
+      orderBy: [
+        { razonSocial: 'asc' },
+        { nombre: 'asc' },
+      ]
+    });
 
-    if (pageParam || pageSizeParam) {
-      // Paginated response
-      const page = parseInt(pageParam || '1', 10);
-      const pageSize = parseInt(pageSizeParam || '15', 10);
-
-      const [clientes, total] = await prisma.$transaction([
-        prisma.cliente.findMany({
-          where,
-          orderBy: [{ razonSocial: 'asc' }, { nombre: 'asc' }],
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-        }),
-        prisma.cliente.count({ where }),
-      ]);
-
-      return NextResponse.json({
-        data: clientes,
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
-      });
-    } else {
-      // Unpaginated response
-      const clientes = await prisma.cliente.findMany({
-        where,
-        orderBy: [{ razonSocial: 'asc' }, { nombre: 'asc' }],
-      });
-      return NextResponse.json(clientes); // Return array directly
-    }
+    return NextResponse.json(clientes);
   } catch (error) {
     console.error("Error fetching clientes:", error);
     return NextResponse.json(
@@ -84,11 +59,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { 
-      razonSocial, rut, email, telefono, direccion, latitud, longitud, mediosDePago, paymentStatus,
-      empresa, codigoCliente, nombreAlias, tipoDespacho, canalCliente, subCanal, giroComercial,
-      contacto, listaPrecios, ejecutivaComercial, tipoDireccion, ciudad, comuna
-    } = body;
+    const { razonSocial, rut, email, telefono, direccion, latitud, longitud, mediosDePago, paymentStatus } = body;
 
     if (!razonSocial || !email) {
       return NextResponse.json(
@@ -110,20 +81,6 @@ export async function POST(request: Request) {
         mediosDePago,
         paymentStatus: paymentStatus as PaymentStatus, // Cast to enum type
         userId: userId,
-        // New fields
-        empresa,
-        codigoCliente,
-        nombreAlias,
-        tipoDespacho,
-        canalCliente,
-        subCanal,
-        giroComercial,
-        contacto,
-        listaPrecios,
-        ejecutivaComercial,
-        tipoDireccion,
-        ciudad,
-        comuna,
       },
     });
 
@@ -140,46 +97,6 @@ export async function POST(request: Request) {
         }
     }
     
-    return NextResponse.json(
-      { message: "Error interno del servidor" },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/clientes
-export async function DELETE(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-  const userId = parseInt(session.user.id, 10);
-
-  try {
-    const { ids } = await request.json();
-
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json(
-        { message: "Se requiere un arreglo de IDs de cliente" },
-        { status: 400 }
-      );
-    }
-
-    const deleteResult = await prisma.cliente.deleteMany({
-      where: {
-        id: {
-          in: ids,
-        },
-        userId: userId, // Ensure users can only delete their own clients
-      },
-    });
-
-    return NextResponse.json({
-      message: `Se eliminaron ${deleteResult.count} clientes.`,
-      count: deleteResult.count,
-    });
-  } catch (error) {
-    console.error("Error deleting clientes:", error);
     return NextResponse.json(
       { message: "Error interno del servidor" },
       { status: 500 }
