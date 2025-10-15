@@ -16,6 +16,7 @@ interface Producto {
   id: number;
   nombre: string;
   precioTotal: number;
+  codigo: string;
 }
 
 interface LineItem {
@@ -39,7 +40,7 @@ export default function NuevaVentaPage() {
   const [descripcion, setDescripcion] = useState('');
 
   // Product selection state
-  const [currentProductoId, setCurrentProductoId] = useState<string>('');
+  const [currentProductoCode, setCurrentProductoCode] = useState<string>('');
   const [currentCantidad, setCurrentCantidad] = useState<number>(1);
 
   // UI state
@@ -73,13 +74,16 @@ export default function NuevaVentaPage() {
 
   // --- Handlers ---
   const handleAddProduct = () => {
-    if (!currentProductoId || currentCantidad <= 0) {
-      setError('Selecciona un producto y una cantidad válida.');
+    if (!currentProductoCode || currentCantidad <= 0) {
+      setError('Ingresa un código de producto y una cantidad válida.');
       return;
     }
 
-    const producto = productos.find(p => p.id === parseInt(currentProductoId, 10));
-    if (!producto) return;
+    const producto = productos.find(p => p.codigo === currentProductoCode);
+    if (!producto) {
+      setError('Producto no encontrado.');
+      return;
+    }
 
     // Check if product is already in the list
     const existingItem = lineItems.find(item => item.productoId === producto.id);
@@ -101,7 +105,7 @@ export default function NuevaVentaPage() {
     }
 
     // Reset inputs
-    setCurrentProductoId('');
+    setCurrentProductoCode('');
     setCurrentCantidad(1);
     setError(null);
   };
@@ -199,10 +203,12 @@ export default function NuevaVentaPage() {
               <Card.Header>2. Productos</Card.Header>
               <Card.Body>
                 <InputGroup className="mb-3">
-                  <Form.Select value={currentProductoId} onChange={e => setCurrentProductoId(e.target.value)}>
-                    <option value="">Selecciona un producto...</option>
-                    {productos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                  </Form.Select>
+                  <Form.Control
+                    type="text"
+                    placeholder="Ingresa código de producto..."
+                    value={currentProductoCode}
+                    onChange={e => setCurrentProductoCode(e.target.value)}
+                  />
                   <Form.Control 
                     type="number" 
                     value={currentCantidad} 
