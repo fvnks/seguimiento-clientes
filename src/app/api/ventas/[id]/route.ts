@@ -80,6 +80,78 @@ export async function GET(request: Request, { params }: Params) {
   }
 }
 
+// PUT /api/ventas/[id]
+export async function PUT(request: Request, { params }: Params) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+  const userId = parseInt(session.user.id, 10);
+  const ventaId = parseInt(params.id, 10);
+
+  if (isNaN(ventaId)) {
+    return NextResponse.json({ message: "ID de venta inválido" }, { status: 400 });
+  }
+
+  if (!await checkOwnership(userId, ventaId)) {
+    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+  }
+
+  try {
+    const body = await request.json();
+    const { clienteId, fecha, descripcion, productos } = body;
+
+    if (!clienteId || !fecha || !productos || !Array.isArray(productos) || productos.length === 0) {
+      return NextResponse.json({ message: 'Datos de venta inválidos' }, { status: 400 });
+    }
+
+    const updatedVenta = await prisma.$transaction(async (tx) => {
+      // 1. Update the Venta itself
+      const venta = await tx.venta.update({
+        where: { id: ventaId },
+        data: {
+          clienteId: parseInt(clienteId, 10),
+          fecha: new Date(fecha),
+          descripcion,
+        },
+      });
+
+      // 2. Delete old VentaProducto records
+      await tx.ventaProducto.deleteMany({ where: { ventaId: ventaId } });
+
+      // 3. Create new VentaProducto records
+      const productosData = await Promise.all(productos.map(async (p: { productoId: number; cantidad: number; }) => {
+        const producto = await tx.producto.findUnique({ where: { id: p.productoId } });
+        if (!producto) {
+          throw new Error(`Producto con ID ${p.productoId} no encontrado`);
+        }
+        return {
+          ventaId: ventaId,
+          productoId: p.productoId,
+          cantidad: p.cantidad,
+          precioAlMomento: producto.precioTotal, // Use current price
+        };
+      }));
+
+      await tx.ventaProducto.createMany({
+        data: productosData,
+      });
+
+      return venta;
+    });
+
+    return NextResponse.json(updatedVenta);
+
+  } catch (error) {
+    console.error(`Error updating venta ${params.id}:`, error);
+    return NextResponse.json(
+      { message: "Error interno del servidor" },
+      { status: 500 }
+    );
+  }
+}
+
+
 // DELETE /api/ventas/[id]
 export async function DELETE(request: Request, { params }: Params) {
   const session = await getServerSession(authOptions);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Container, Form, Button, Alert, Spinner, Row, Col, Card, ListGroup, InputGroup } from "react-bootstrap";
 import Link from "next/link";
 
@@ -26,17 +26,28 @@ interface LineItem {
   precio: number;
 }
 
-export default function NuevaVentaPage() {
+interface Venta {
+    id: number;
+    fecha: string;
+    descripcion: string;
+    clienteId: number;
+    productosVendidos: { productoId: number; cantidad: number; producto: Producto }[];
+}
+
+export default function EditarVentaPage() {
   const router = useRouter();
+  const params = useParams();
+  const { id: ventaId } = params;
 
   // Data state
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
+  const [venta, setVenta] = useState<Venta | null>(null);
   
   // Form state
   const [clienteId, setClienteId] = useState<string>('');
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
+  const [fecha, setFecha] = useState('');
   const [descripcion, setDescripcion] = useState('');
 
   // Product selection state
@@ -53,25 +64,46 @@ export default function NuevaVentaPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [clientesRes, productosRes] = await Promise.all([
+        const [clientesRes, productosRes, ventaRes] = await Promise.all([
           fetch('/api/clientes'),
           fetch('/api/productos?pageSize=1000'), // Fetch all products
+          fetch(`/api/ventas/${ventaId}`),
         ]);
-        if (!clientesRes.ok || !productosRes.ok) {
-          throw new Error('No se pudieron cargar los clientes o productos.');
+
+        if (!clientesRes.ok || !productosRes.ok || !ventaRes.ok) {
+          throw new Error('No se pudieron cargar los datos necesarios para editar la venta.');
         }
+
         const clientesData = await clientesRes.json();
         const productosData = await productosRes.json();
+        const ventaData = await ventaRes.json();
+
         setClientes(clientesData.clientes || clientesData);
         setProductos(productosData.productos);
+        setVenta(ventaData);
+
+        // Pre-fill form
+        setClienteId(ventaData.clienteId.toString());
+        setFecha(new Date(ventaData.fecha).toISOString().split('T')[0]);
+        setDescripcion(ventaData.descripcion || '');
+        setLineItems(ventaData.productosVendidos.map((p: any) => ({
+          productoId: p.producto.id,
+          nombre: p.producto.nombre,
+          cantidad: p.cantidad,
+          precio: p.precioAlMomento,
+        })));
+
       } catch (err: any) {
         setError(err.message);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
-  }, []);
+
+    if (ventaId) {
+      fetchData();
+    }
+  }, [ventaId]);
 
   useEffect(() => {
     if (currentProductoCode) {
@@ -91,17 +123,14 @@ export default function NuevaVentaPage() {
 
     const producto = selectedProduct;
 
-    // Check if product is already in the list
     const existingItem = lineItems.find(item => item.productoId === producto.id);
     if (existingItem) {
-      // Update quantity if it already exists
       setLineItems(lineItems.map(item => 
         item.productoId === producto.id 
           ? { ...item, cantidad: item.cantidad + currentCantidad } 
           : item
       ));
     } else {
-      // Add new item
       setLineItems([...lineItems, {
         productoId: producto.id,
         nombre: producto.nombre,
@@ -110,7 +139,6 @@ export default function NuevaVentaPage() {
       }]);
     }
 
-    // Reset inputs
     setCurrentProductoCode('');
     setCurrentCantidad(1);
     setSelectedProduct(null);
@@ -139,15 +167,15 @@ export default function NuevaVentaPage() {
     };
 
     try {
-      const res = await fetch('/api/ventas', {
-        method: 'POST',
+      const res = await fetch(`/api/ventas/${ventaId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Error al crear la venta');
+        throw new Error(errorData.message || 'Error al actualizar la venta');
       }
 
       router.push('/ventas');
@@ -167,10 +195,14 @@ export default function NuevaVentaPage() {
     return <Container className="text-center mt-5"><Spinner animation="border" /></Container>;
   }
 
+  if (!venta) {
+    return <Container className="mt-4"><Alert variant="danger">Venta no encontrada.</Alert></Container>
+  }
+
   return (
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h1>Nueva Venta</h1>
+        <h1>Editar Venta</h1>
         <Link href="/ventas" passHref>
           <Button variant="secondary">&larr; Volver al Historial</Button>
         </Link>
@@ -264,7 +296,7 @@ export default function NuevaVentaPage() {
         </Row>
 
         <Button variant="success" size="lg" onClick={handleSubmit} disabled={isSubmitting || lineItems.length === 0}>
-          {isSubmitting ? <Spinner as="span" size="sm" /> : 'Guardar Venta'}
+          {isSubmitting ? <Spinner as="span" size="sm" /> : 'Guardar Cambios'}
         </Button>
       </Form>
     </Container>
