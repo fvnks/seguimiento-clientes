@@ -35,7 +35,8 @@ export async function GET() {
     // Calculate the total for each sale and prepare it for the calendar view
     const ventasParaCalendario = ventas.map(venta => {
       const total = venta.productosVendidos.reduce((acc, item) => {
-        const precioConDescuento = (item.producto.precioNeto - item.descuento) * 1.19;
+        const descuento = (item as any).descuento || 0;
+        const precioConDescuento = (item.producto.precioNeto * (1 - descuento / 100)) * 1.19;
         return acc + (item.cantidad * precioConDescuento);
       }, 0);
 

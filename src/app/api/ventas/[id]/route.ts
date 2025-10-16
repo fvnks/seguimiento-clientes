@@ -65,7 +65,8 @@ export async function GET(request: Request, { params }: Params) {
 
     // Calculate total for the sale
     const total = venta.productosVendidos.reduce((acc, item) => {
-        const precioConDescuento = (item.producto.precioNeto - item.descuento) * 1.19;
+        const descuento = (item as any).descuento || 0;
+        const precioConDescuento = (item.producto.precioNeto * (1 - descuento / 100)) * 1.19;
         return acc + (item.cantidad * precioConDescuento);
     }, 0);
 
