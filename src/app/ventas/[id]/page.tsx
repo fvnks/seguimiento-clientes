@@ -17,6 +17,7 @@ interface Cliente {
 interface VentaProducto {
   cantidad: number;
   precioAlMomento: number; // This is the total price, kept for historical reasons
+  descuento: number; // Percentage
   producto: {
     nombre: string;
     codigo: string;
@@ -114,7 +115,8 @@ export default function NotaVentaPage() {
 
   // Calculate totals
   const totalNeto = venta.productosVendidos.reduce((acc, item) => {
-    return acc + (item.cantidad * item.producto.precioNeto);
+    const precioConDescuento = item.producto.precioNeto * (1 - (item.descuento || 0) / 100);
+    return acc + (item.cantidad * precioConDescuento);
   }, 0);
   const iva = totalNeto * 0.19;
   const totalFinal = totalNeto + iva;
@@ -172,6 +174,8 @@ export default function NotaVentaPage() {
                   <th>Producto</th>
                   <th className="text-end">Cantidad</th>
                   <th className="text-end">Precio Neto</th>
+                  <th className="text-end">Descuento</th>
+                  <th className="text-end">Precio Final</th>
                   <th className="text-end">Total Línea</th>
                 </tr>
               </thead>
@@ -182,7 +186,9 @@ export default function NotaVentaPage() {
                     <td className="product-name-cell">{item.producto.nombre}</td>
                     <td className="text-end">{item.cantidad}</td>
                     <td className="text-end">{formatCurrency(item.producto.precioNeto)}</td>
-                    <td className="text-end">{formatCurrency(item.cantidad * item.producto.precioNeto)}</td>
+                    <td className="text-end">{item.descuento || 0}%</td>
+                    <td className="text-end">{formatCurrency(item.producto.precioNeto * (1 - (item.descuento || 0) / 100))}</td>
+                    <td className="text-end">{formatCurrency(item.cantidad * (item.producto.precioNeto * (1 - (item.descuento || 0) / 100)))}</td>
                   </tr>
                 ))}
               </tbody>

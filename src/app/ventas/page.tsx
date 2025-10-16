@@ -5,6 +5,15 @@ import { Container, Table, Alert, Spinner, Card, Button, Modal } from 'react-boo
 import Link from 'next/link';
 
 // Define types
+interface VentaProducto {
+  cantidad: number;
+  descuento: number;
+  producto: {
+    nombre: string;
+    precioNeto: number;
+  };
+}
+
 interface Venta {
   id: number;
   fecha: string;
@@ -13,12 +22,7 @@ interface Venta {
     nombre: string; // legacy
     razonSocial: string | null;
   };
-  productosVendidos: {
-    cantidad: number;
-    producto: {
-      nombre: string;
-    };
-  }[];
+  productosVendidos: VentaProducto[];
 }
 
 export default function VentasPage() {

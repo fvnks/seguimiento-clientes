@@ -34,17 +34,15 @@ export async function GET() {
 
     // Calculate the total for each sale and prepare it for the calendar view
     const ventasParaCalendario = ventas.map(venta => {
-      const totalNeto = venta.productosVendidos.reduce((acc, item) => {
-        // Ensure precioNeto is a number, default to 0 if not
-        const precioNeto = typeof item.producto.precioNeto === 'number' ? item.producto.precioNeto : 0;
-        return acc + (item.cantidad * precioNeto);
+      const total = venta.productosVendidos.reduce((acc, item) => {
+        const precioConDescuento = (item.producto.precioNeto - item.descuento) * 1.19;
+        return acc + (item.cantidad * precioConDescuento);
       }, 0);
-      const monto = totalNeto * 1.19; // Add 19% IVA
 
       return {
         id: venta.id,
         fecha: venta.fecha.toISOString(),
-        total: monto,
+        total: total,
         descripcion: venta.descripcion,
         cliente: {
           nombre: venta.cliente.razonSocial || venta.cliente.nombre,
@@ -109,6 +107,7 @@ export async function POST(request: Request) {
             productoId: item.productoId,
             cantidad: item.cantidad,
             precioAlMomento: producto.precioTotal, // Save the price at the time of sale
+            descuento: item.descuento || 0,
           },
         });
       }

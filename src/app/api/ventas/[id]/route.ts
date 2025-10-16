@@ -65,7 +65,8 @@ export async function GET(request: Request, { params }: Params) {
 
     // Calculate total for the sale
     const total = venta.productosVendidos.reduce((acc, item) => {
-      return acc + (item.cantidad * item.precioAlMomento);
+        const precioConDescuento = (item.producto.precioNeto - item.descuento) * 1.19;
+        return acc + (item.cantidad * precioConDescuento);
     }, 0);
 
     const ventaConTotal = { ...venta, total };
@@ -120,7 +121,7 @@ export async function PUT(request: Request, { params }: Params) {
       await tx.ventaProducto.deleteMany({ where: { ventaId: ventaId } });
 
       // 3. Create new VentaProducto records
-      const productosData = await Promise.all(productos.map(async (p: { productoId: number; cantidad: number; }) => {
+      const productosData = await Promise.all(productos.map(async (p: { productoId: number; cantidad: number; descuento: number; }) => {
         const producto = await tx.producto.findUnique({ where: { id: p.productoId } });
         if (!producto) {
           throw new Error(`Producto con ID ${p.productoId} no encontrado`);
@@ -130,6 +131,7 @@ export async function PUT(request: Request, { params }: Params) {
           productoId: p.productoId,
           cantidad: p.cantidad,
           precioAlMomento: producto.precioTotal, // Use current price
+          descuento: p.descuento || 0,
         };
       }));
 

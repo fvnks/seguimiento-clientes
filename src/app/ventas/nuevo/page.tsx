@@ -15,6 +15,7 @@ interface Cliente {
 interface Producto {
   id: number;
   nombre: string;
+  precioNeto: number;
   precioTotal: number;
   codigo: string;
 }
@@ -24,6 +25,8 @@ interface LineItem {
   nombre: string;
   cantidad: number;
   precio: number;
+  descuento: number; // Percentage
+  precioNeto: number;
 }
 
 export default function NuevaVentaPage() {
@@ -41,7 +44,8 @@ export default function NuevaVentaPage() {
 
   // Product selection state
   const [currentProductoCode, setCurrentProductoCode] = useState<string>('');
-  const [currentCantidad, setCurrentCantidad] = useState<number>(1);
+  const [currentCantidad, setCurrentCantidad] = useState<number | ''>(1);
+  const [currentDescuento, setCurrentDescuento] = useState<number | ''>(0);
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
 
   // UI state
@@ -84,35 +88,36 @@ export default function NuevaVentaPage() {
 
   // --- Handlers ---
   const handleAddProduct = () => {
-    if (!selectedProduct || currentCantidad <= 0) {
+    const cantidad = currentCantidad === '' ? 1 : currentCantidad;
+    if (!selectedProduct || cantidad <= 0) {
       setError('Ingresa un código de producto válido y una cantidad.');
       return;
     }
 
     const producto = selectedProduct;
+    const descuento = currentDescuento === '' ? 0 : currentDescuento;
 
-    // Check if product is already in the list
     const existingItem = lineItems.find(item => item.productoId === producto.id);
     if (existingItem) {
-      // Update quantity if it already exists
       setLineItems(lineItems.map(item => 
         item.productoId === producto.id 
-          ? { ...item, cantidad: item.cantidad + currentCantidad } 
+          ? { ...item, cantidad: item.cantidad + cantidad } 
           : item
       ));
     } else {
-      // Add new item
       setLineItems([...lineItems, {
         productoId: producto.id,
         nombre: producto.nombre,
-        cantidad: currentCantidad,
+        cantidad: cantidad,
         precio: producto.precioTotal,
+        descuento: descuento,
+        precioNeto: producto.precioNeto
       }]);
     }
 
-    // Reset inputs
     setCurrentProductoCode('');
     setCurrentCantidad(1);
+    setCurrentDescuento(0);
     setSelectedProduct(null);
     setError(null);
   };
@@ -135,7 +140,7 @@ export default function NuevaVentaPage() {
       clienteId: parseInt(clienteId, 10),
       fecha,
       descripcion,
-      productos: lineItems.map(({ productoId, cantidad }) => ({ productoId, cantidad }))
+      productos: lineItems.map(({ productoId, cantidad, descuento }) => ({ productoId, cantidad, descuento }))
     };
 
     try {
@@ -160,7 +165,10 @@ export default function NuevaVentaPage() {
   };
 
   // --- Calculations ---
-  const totalVenta = lineItems.reduce((acc, item) => acc + (item.cantidad * item.precio), 0);
+  const totalVenta = lineItems.reduce((acc, item) => {
+    const precioConDescuento = (item.precioNeto * (1 - item.descuento / 100)) * 1.19;
+    return acc + (item.cantidad * precioConDescuento);
+  }, 0);
 
   // --- Render ---
   if (isLoading) {
@@ -220,20 +228,36 @@ export default function NuevaVentaPage() {
                    <datalist id="product-codes">
                     {productos.map(p => <option key={p.id} value={p.codigo}>{p.nombre}</option>)}
                   </datalist>
-                  <Form.Control 
-                    type="number" 
-                    value={currentCantidad} 
-                    onChange={e => setCurrentCantidad(parseInt(e.target.value, 10) || 1)} 
-                    min={1}
-                    style={{ maxWidth: '100px' }}
-                  />
+                  <InputGroup>
+                    <InputGroup.Text>Cantidad</InputGroup.Text>
+                    <Form.Control 
+                      type="number" 
+                      value={currentCantidad} 
+                      onChange={e => setCurrentCantidad(e.target.value === '' ? '' : parseInt(e.target.value, 10))} 
+                      min={1}
+                      style={{ maxWidth: '100px' }}
+                    />
+                  </InputGroup>
+                  <InputGroup>
+                    <InputGroup.Text>Descuento %</InputGroup.Text>
+                    <Form.Control 
+                      type="number" 
+                      placeholder="%"
+                      value={currentDescuento} 
+                      onChange={e => setCurrentDescuento(e.target.value === '' ? '' : parseInt(e.target.value, 10))} 
+                      min={0}
+                      max={100}
+                      style={{ maxWidth: '100px' }}
+                    />
+                  </InputGroup>
                   <Button variant="outline-primary" onClick={handleAddProduct}>Añadir</Button>
                 </InputGroup>
 
                 {selectedProduct && (
                   <Alert variant="info" className="mt-2">
                     <p className="mb-0"><strong>Producto:</strong> {selectedProduct.nombre}</p>
-                    <p className="mb-0"><strong>Precio:</strong> {new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(selectedProduct.precioTotal)}</p>
+                    <p className="mb-0"><strong>Precio Neto:</strong> {new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(selectedProduct.precioNeto)}</p>
+                    <p className="mb-0"><strong>Precio Total:</strong> {new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(selectedProduct.precioTotal)}</p>
                   </Alert>
                 )}
 
@@ -242,10 +266,10 @@ export default function NuevaVentaPage() {
                     <ListGroup.Item key={item.productoId} className="d-flex justify-content-between align-items-center">
                       <div>
                         {item.cantidad}x {item.nombre}
-                        <small className="text-muted d-block">{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(item.precio)} c/u</small>
+                        <small className="text-muted d-block">{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format((item.precioNeto * (1 - item.descuento / 100)) * 1.19)} c/u (dto: {item.descuento}%)</small>
                       </div>
                       <div>
-                        <span className="fw-bold me-3">{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(item.cantidad * item.precio)}</span>
+                        <span className="fw-bold me-3">{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(item.cantidad * (item.precioNeto * (1 - item.descuento / 100)) * 1.19)}</span>
                         <Button variant="outline-danger" size="sm" onClick={() => handleRemoveItem(item.productoId)}>X</Button>
                       </div>
                     </ListGroup.Item>

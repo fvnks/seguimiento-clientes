@@ -55,6 +55,7 @@ model VentaProducto {
   id              Int      @id @default(autoincrement())
   cantidad        Int
   precioAlMomento Float // Price of the product at the time of sale
+  descuento       Float    @default(0)
 
   venta      Venta    @relation(fields: [ventaId], references: [id])
   ventaId    Int
