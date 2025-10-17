@@ -76,28 +76,30 @@ export default function ReportesPage() {
   }, []);
 
   // --- Data Processing ---
-  const totalRevenue = ventas.reduce((acc, venta) => acc + venta.monto, 0);
+  const totalRevenue = ventas.reduce((acc, venta) => acc + (Number(venta.monto) || 0), 0);
   const totalSales = ventas.length;
   const totalClients = clientes.length;
 
   const salesByMonth: SalesByMonth[] = ventas.reduce((acc, venta) => {
     const month = moment(venta.fecha).format('MMM YYYY');
     const existingMonth = acc.find(item => item.name === month);
+    const monto = Number(venta.monto) || 0;
 
     if (existingMonth) {
-      existingMonth.Ingresos += venta.monto;
+      existingMonth.Ingresos += monto;
     } else {
-      acc.push({ name: month, Ingresos: venta.monto });
+      acc.push({ name: month, Ingresos: monto });
     }
     return acc;
   }, [] as SalesByMonth[]).sort((a, b) => moment(a.name, 'MMM YYYY').valueOf() - moment(b.name, 'MMM YYYY').valueOf());
 
   const topClients: TopClient[] = ventas.reduce((acc, venta) => {
     const client = acc.find(c => c.id === venta.cliente.id);
+    const monto = Number(venta.monto) || 0;
     if(client) {
-        client.totalVendido += venta.monto;
+        client.totalVendido += monto;
     } else if (venta.cliente) {
-        acc.push({ id: venta.cliente.id, nombre: venta.cliente.nombre, totalVendido: venta.monto });
+        acc.push({ id: venta.cliente.id, nombre: venta.cliente.nombre, totalVendido: monto });
     }
     return acc;
   }, [] as TopClient[]).sort((a, b) => b.totalVendido - a.totalVendido).slice(0, 5);
