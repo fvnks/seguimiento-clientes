@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
-import { PaymentStatus } from "@/generated/prisma";
+import { PaymentStatus } from "@prisma/client";
 
 // GET /api/clientes?search=...
 export async function GET(request: NextRequest) {
