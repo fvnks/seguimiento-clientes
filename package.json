@@ -7,7 +7,8 @@
     "build": "prisma db push && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest"
+    "test": "vitest",
+    "prisma:seed": "ts-node --project prisma/tsconfig.json prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.16.3",
@@ -48,8 +49,5 @@
     "typescript": "^5",
     "vitest": "^1.6.0",
     "sass": "^1.77.4"
-  },
-  "prisma": {
-    "seed": "ts-node --project prisma/tsconfig.json prisma/seed.ts"
   }
 }
