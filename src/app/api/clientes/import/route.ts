@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     for (const [index, row] of (data as any[]).entries()) {
         try {
-            const razonSocial = row[columnMapping.razonSocial] || row[columnMapping.nombreAlias];
+            const razonSocial = row[columnMapping.razonSocial];
             const email = row[columnMapping.email];
 
             if (!razonSocial || !email) {
@@ -75,22 +75,10 @@ export async function POST(request: NextRequest) {
                 rut: row[columnMapping.rut] ? String(row[columnMapping.rut]) : null,
                 telefono: row[columnMapping.telefono] ? String(row[columnMapping.telefono]) : null,
                 direccion: row[columnMapping.direccion] ? String(row[columnMapping.direccion]) : null,
+                comuna: row[columnMapping.comuna] ? String(row[columnMapping.comuna]) : null,
                 mediosDePago: row[columnMapping.condicionVenta] ? String(row[columnMapping.condicionVenta]) : null,
                 paymentStatus: "PENDIENTE" as PaymentStatus,
                 userId: userId,
-                empresa: row[columnMapping.empresa] ? String(row[columnMapping.empresa]) : null,
-                codigoCliente: row[columnMapping.codigoCliente] ? String(row[columnMapping.codigoCliente]) : null,
-                nombreAlias: row[columnMapping.nombreAlias] ? String(row[columnMapping.nombreAlias]) : null,
-                tipoDespacho: row[columnMapping.tipoDespacho] ? String(row[columnMapping.tipoDespacho]) : null,
-                canalCliente: row[columnMapping.canalCliente] ? String(row[columnMapping.canalCliente]) : null,
-                subCanal: row[columnMapping.subCanal] ? String(row[columnMapping.subCanal]) : null,
-                giroComercial: row[columnMapping.giroComercial] ? String(row[columnMapping.giroComercial]) : null,
-                contacto: row[columnMapping.contacto] ? String(row[columnMapping.contacto]) : null,
-                listaPrecios: row[columnMapping.listaPrecios] ? String(row[columnMapping.listaPrecios]) : null,
-                ejecutivaComercial: row[columnMapping.ejecutivaComercial] ? String(row[columnMapping.ejecutivaComercial]) : null,
-                tipoDireccion: row[columnMapping.tipoDireccion] ? String(row[columnMapping.tipoDireccion]) : null,
-                ciudad: row[columnMapping.ciudad] ? String(row[columnMapping.ciudad]) : null,
-                comuna: row[columnMapping.comuna] ? String(row[columnMapping.comuna]) : null,
             };
 
             const existingClient = await prisma.cliente.findUnique({

@@ -27,6 +27,7 @@ interface Cliente {
   email: string;
   telefono: string | null;
   direccion: string | null;
+  comuna: string | null;
   latitud: number | null;
   longitud: number | null;
   mediosDePago: string | null;
@@ -152,10 +153,10 @@ export default function ClienteDetailPage() {
               <ListGroup.Item><b>Email:</b> {cliente.email}</ListGroup.Item>
               <ListGroup.Item><b>Teléfono:</b> {cliente.telefono || 'N/A'}</ListGroup.Item>
               <ListGroup.Item><b>Dirección:</b> {cliente.direccion || 'N/A'}</ListGroup.Item>
-               {cliente.latitud != null && cliente.longitud != null && (
+               {cliente.direccion && (
                 <ListGroup.Item>
-                  <Button as="a" href={`https://www.google.com/maps/search/?api=1&query=${cliente.latitud},${cliente.longitud}`} target="_blank" rel="noopener noreferrer" variant="outline-primary" size="sm" className="me-2">Google Maps</Button>
-                  <Button as="a" href={`https://waze.com/ul?ll=${cliente.latitud},${cliente.longitud}&navigate=yes`} target="_blank" rel="noopener noreferrer" variant="outline-info" size="sm">Waze</Button>
+                  <Button as="a" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cliente.direccion}, ${cliente.comuna}`)}`} target="_blank" rel="noopener noreferrer" variant="outline-primary" size="sm" className="me-2">Google Maps</Button>
+                  <Button as="a" href={`https://waze.com/ul?q=${encodeURIComponent(`${cliente.direccion}, ${cliente.comuna}`)}`} target="_blank" rel="noopener noreferrer" variant="outline-info" size="sm">Waze</Button>
                 </ListGroup.Item>
               )}
             </ListGroup>

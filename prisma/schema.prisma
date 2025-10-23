@@ -25,6 +25,7 @@ model Cliente {
   email         String        @unique
   telefono      String?
   direccion     String?
+  comuna        String?
   latitud       Float?
   longitud      Float?
   mediosDePago  String?       @db.Text

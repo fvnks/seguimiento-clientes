@@ -103,7 +103,7 @@ export async function PUT(request: Request, { params }: Params) {
 
   try {
     const body = await request.json();
-    const { razonSocial, rut, email, telefono, direccion, latitud, longitud, mediosDePago, paymentStatus } = body;
+    const { razonSocial, rut, email, telefono, direccion, comuna, latitud, longitud, mediosDePago, paymentStatus } = body;
 
     const dataToUpdate: any = {};
     if (razonSocial) {
@@ -114,6 +114,7 @@ export async function PUT(request: Request, { params }: Params) {
     if (email) dataToUpdate.email = email;
     if (telefono) dataToUpdate.telefono = telefono;
     if (direccion) dataToUpdate.direccion = direccion;
+    if (comuna) dataToUpdate.comuna = comuna;
     if (latitud !== undefined) dataToUpdate.latitud = latitud;
     if (longitud !== undefined) dataToUpdate.longitud = longitud;
     if (mediosDePago !== undefined) dataToUpdate.mediosDePago = mediosDePago;
